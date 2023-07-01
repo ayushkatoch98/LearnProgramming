@@ -1,4 +1,7 @@
 import { $ } from "react-jquery-plugin";
+import axios from "axios";
+import { ALERT_TIMEOUT } from "./constant";
+
 
 function hideAlert(setAlert){
     setTimeout(function(){
@@ -8,19 +11,62 @@ function hideAlert(setAlert){
                 hidden : "hidden"
             }
         ))
-    },3000)
+    }, ALERT_TIMEOUT)
 }
 
 function showAlert(setAlert, title, description, color){
+    // description is axios response type
+    // console.log("UTILITY", description.data);
+    var newDescription = description;
+    if ((typeof description) != "string"){
+     
+
+        if(description?.data != undefined){
+
+            newDescription = description.data?.message;
+                
+            if (newDescription == undefined){
+                description = description.data?.data?.message
+            }
+
+            if (newDescription == undefined){
+                newDescription = description.data?.message
+            }
+            
+            if (newDescription == undefined){
+                newDescription = "response message is fucked dude x2";
+            }    
+        
+        }
+        else if (description.response != undefined){
+
+            newDescription = description.response?.data.message
+            if (newDescription == undefined){
+                newDescription = description.response?.data?.data?.message
+            }
+            if (newDescription == undefined){
+                newDescription = description.response?.data?.message
+            }
+            if (newDescription == undefined){
+                newDescription = "response message is fucked dude";
+            }
+        }
+           
+        else{
+            newDescription = description.message
+        }
+
+    }
     setAlert( prev => (
         {
             ...prev,
             title: title,
-            description: description,
+            description: newDescription,
             hidden: "",
             color: color 
         }
-    ) )
+    ))
+    hideAlert(setAlert)
 }
 
 function str_replace(find, replace, str){
@@ -42,6 +88,20 @@ function buildHeader(user){
             "Authorization": "Token " + user.token
         }
     }
+}
+
+
+
+function deleteResource(url, setAlert){
+    axios.delete(url).then(res => {
+        console.log("Deletion Successful", res);
+
+        showAlert(setAlert, "Successfully deleted", "", "success")
+
+    }).catch(err => {
+        showAlert(setAlert, "Unable to delete", "Something went wrong", "failure");
+        console.log("Deletion Error", err)
+    })
 }
 
 export {hideAlert, showAlert, buildURL, buildHeader}

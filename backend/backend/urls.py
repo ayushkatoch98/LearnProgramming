@@ -9,5 +9,7 @@ urlpatterns = [
     path("module/", include("module.urls")),
     path("assignment/", include("assignment.urls")),
     path("group/", include("group.urls")),
+    path("submission/", include("submission.urls")),
+    path("grade/", include("remark.urls")),
     path("admin/", admin.site.urls),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

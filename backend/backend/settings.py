@@ -46,7 +46,9 @@ INSTALLED_APPS = [
     'module',
     'assignment',
     'remark',
-    'group'
+    'group',
+    'submission'
+    # 'django_extensions',
 ]
 
 MIDDLEWARE = [

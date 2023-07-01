@@ -16,16 +16,16 @@ import DefaultAccordion from '../Accordion';
 // import { Button, Label, } from 'flowbite-react';
 
 
-export default function AssignmentComponent(props) {
+export default function AssignmentList(props) {
 
     const setAlert = props.setAlert
     const user = props.user
     const setUser = props.setUser
 
-    const [modules, setModules] = useState({})
-    const [updated, setUpdated] = useState(false)
         
     const navigator = useNavigate()
+
+    const {cid} = useParams()
 
     function handleDelete(aid){
         
@@ -39,62 +39,47 @@ export default function AssignmentComponent(props) {
         const url = buildURL(COURSE_URL.teacher.assignment.url.replace("@cid", props.cid), user)
         axios.delete(url, header ).then( res => {
             console.log("Response Del", res)
+            showAlert(setAlert, "Deleted", res, "failure");
+
+            var newAssignments = []
+
+            for (var i = 0; i < props.data.course.assignments.Assignments.length; i++){
+                if (props.data.course.assignments.Assignments[i].id != res.data.data.id){
+                    newAssignments.push(props.data.course.assignments.Assignments[i])
+                }
+            }
+
+            props.data.setCourse(prev => {
+                return {
+                    ...prev,
+                    "assignments" : {
+                        "Assignments": newAssignments
+                    }
+                }
+            })
 
         }).catch(err => {
             console.log("Response Del", err)
+            showAlert(setAlert, "Error", err, "failure");
 
         })
+
 
 
     }
  
-    useEffect(() => {
-   
-        axios.get(buildURL(COURSE_URL.teacher.assignment.url.replace("@cid", props.cid), user), buildHeader(user)).then(res => {
-            console.log("response Assignment GET ALL", res)
-            const data = {}
-            data["Assignments"] = res.data
-            data.Assignments[0].group = "Assignments"
-
-            // var data = {}
-            // for (var i = 0; i < res.data.length; i++){
-            //     var gid = res.data[i].gid + "";
-            //     if (!(gid in data))
-            //         data[res.data[i].gid] = []
-                
-            //     data[gid].push(res.data[i])
-                
-            // }
-            // console.log("Formatted Data", data)
-        
-
-            setModules(prev => {
-                return {
-                    ...prev,
-                    data
-                }
-            })
-
-            setUpdated(true)
-
-
-            
-        }).catch(err => {
-            console.log("err", err)
-        })
-    }, []);
+ 
     
-    console.log("FINAL DATA" , modules)
 
     return (
         
 
                 <main>
                     <div className="mx-automax-w-7xl py-6 px-1 sm:px-6 lg:px-8">
-                        <div className='flex items-center flex-col'>
-                            <div className='border p-10 shadow border-solid w-5/6 flex-col gap-4'>
+                        <div className='flex items-left flex-col'>
+                            <div className='border p-10 shadow border-solid w-full flex-col gap-4'>
 
-                                { updated ? <DefaultAccordion onDelete={handleDelete} data={modules}></DefaultAccordion> : <></>}
+                                <DefaultAccordion cid={cid} onDelete={handleDelete} onDownload="none" data={props.data.course.assignments}></DefaultAccordion>
                                 
                             </div> 
 

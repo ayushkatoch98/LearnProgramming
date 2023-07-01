@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import AppContext from '../../components/AppContext';
 import Cards from '../../components/Card.jsx';
 
-export default function Dashboard(props) {
+export default function CourseList(props) {
 
     const [alert, setAlert] = useState({
         title : "",
@@ -27,8 +27,8 @@ export default function Dashboard(props) {
     const navigator = useNavigate()
 
     useEffect(() => {
-        axios.get(buildURL(COURSE_URL.teacher.get, user), buildHeader(user)).then(res => {
-            console.log("response", res.data)
+        axios.get(buildURL(COURSE_URL.teacher.course.getAll, user), buildHeader(user)).then(res => {
+            console.log("response", res)
             setData(res.data);
         }).catch(err => {
             console.log("err", err)
@@ -40,12 +40,7 @@ export default function Dashboard(props) {
 
             <div className="min-h-full">
 
-                <Navigation></Navigation>
-                <header className="bg-white shadow">
-                    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                        <h1 className="text-3xl font-bold tracking-tight text-gray-900">{props.header}</h1>
-                    </div>
-                </header>
+                <Navigation header={props.header}></Navigation>
                 <Alerts hidden={alert.hidden} title={alert.title} description={alert.description} color={alert.color}></Alerts>
 
                 <main>
@@ -58,7 +53,7 @@ export default function Dashboard(props) {
                                     
                                     data.map(item => {
                                         return (
-                                            <Cards id={item.id} url="" image={item.image} title={item.title} description={item.description} token={item.token} ></Cards>
+                                            <Cards  key={crypto.randomUUID()}  id={item.id} image={item.image} url={`/course/${item.id}`} title={item.title} description={item.description} token={item.token} ></Cards>
                                         )
                                     })
                                 }

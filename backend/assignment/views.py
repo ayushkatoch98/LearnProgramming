@@ -1,4 +1,4 @@
-from useAuth.models import Profile, Course, CourseDetail, Assignment, AssignmentSubmission, AssignmentCode
+from useAuth.models import Profile, Course, CourseDetail, Assignment, AssignmentSubmission, AssignmentCode, AssignmentRemark
 from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework import status, viewsets
@@ -14,52 +14,85 @@ from django.core.files.temp import NamedTemporaryFile
 from django.core.files import File
 
 from useAuth.custom_permission import isStudent, isTeacher, isInCourse, isCourseOwner
-
+from useAuth.serializers import AssignmentSerializer, AssignmentCodeSerializer, AssignmentRemarkSerializer, AssignmentSubmissionSerializer
+from useAuth.utility import generateData
 
 
 class AssignmentViewStudent(APIView):
 
-    permission_classes = [permissions.IsAuthenticated, isStudent, isInCourse]
+    permission_classes = [permissions.IsAuthenticated, isStudent|isTeacher, isInCourse]
 
-    def get(self, request, cid):
 
-        assignments = Assignment.objects.filter(course__id = cid, is_deleted=False) # group__is_deleted = False
-
-        data = []
-        for assignment in assignments:
-            data.append({
-                "id" : assignment.id,
-                "title" : assignment.title,
-                "download" : assignment.file.url,
-                "course_title": assignment.course.title,
-                "course_image" : assignment.course.image.url,
-                "course_owner": assignment.course.owner.user.first_name,
-                "course__id": assignment.course.id,
-            })
-
-        return Response(data, status=status.HTTP_200_OK)
-    
-    def post(self, request, cid):
-
-        aid = request.data["aid"]
-
-        profile = Profile.objects.get(user__id = request.user.id)
+    def get(self, request, cid, aid=None):
         
+        assignments = []
+        
+        if aid == None:
+            assignments = Assignment.objects.filter(course__id = cid, is_deleted=False) 
+        else:
+            assignments = Assignment.objects.filter(course__id = cid, id = aid, is_deleted=False)
+
+        data = {
+            "submitted": "",
+            "data": [],
+        }
+
+        if aid != None:
+            profile = Profile.objects.get(user__id = request.user.id)
+            submission = AssignmentSubmission.objects.filter(student=profile, assignment=assignments.first()).first()
+
+
+        if aid == None:
+            return Response(generateData("", False, AssignmentSerializer(assignments, many=True).data), status=status.HTTP_200_OK)
+        
+        assignments = assignments.first()
+
+        data = AssignmentSerializer(assignments).data
+        data["submission"] = AssignmentSubmissionSerializer(submission).data
+        return Response(generateData("", False, data), status=status.HTTP_200_OK)
+    
+    
+    def post(self, request, cid, aid, rid = None):
+        # rid = remark id 
+     
+        profile = Profile.objects.get(user__id = request.user.id)
+        course = Course.objects.get(id = cid)
+
+    
         assignment = Assignment.objects.filter(id = aid, is_deleted=False).first()
         if assignment == None:
-            return Response({"err": True, "message": "Couldnt find the assignment"}, status=status.HTTP_404_NOT_FOUND)
-        
-        file = request.FILES["file"]
+            return Response(generateData("Couldnt find the assignment", True), status=status.HTTP_404_NOT_FOUND)
+
+        file = None
+        if "file" in request.FILES:
+            file = request.FILES["file"]
+
+    
         if request.data["request_type"] == "report":
             submission, created = AssignmentSubmission.objects.update_or_create(assignment=assignment, student = profile, defaults={
                 "file" : file,
+                "report_submitted" : True
             })
-        elif request.deta["request_type"] == "code":
+        elif request.data["request_type"] == "code":
             submission, created = AssignmentSubmission.objects.update_or_create(assignment=assignment, student = profile, defaults={
-                "code" : request.data["code"]
+                "code" : request.data["code"],
+                "code_submitted" : True
             })
         
-        return Response({"err": True, "message": "Assignment Submitted"}, status=status.HTTP_200_OK)
+        try:
+            remark = AssignmentRemark.objects.create(submission = submission, remark_by=course.owner, report_score = 0, compilation_score = 0, running_score = 10 , test_cases_score = 10 , final_cases_score = 0, is_final_remark = False)
+        except:
+            remark = AssignmentRemark.objects.filter(submission = submission, submission__assignment__id = aid).first()
+            remark.report_score = 0
+            remark.compilation_score = 10
+            remark.running_score = 10
+            remark.test_cases_score = 10
+            remark.final_cases_score = 0
+            remark.save()
+
+            print("ERROR when creating remark")
+
+        return Response(generateData("Assignment Submitted", False, AssignmentSubmissionSerializer(submission).data), status=status.HTTP_200_OK)
 
     
 
@@ -68,43 +101,38 @@ class AssignmentViewTeacher(APIView):
     permission_classes = [permissions.IsAuthenticated, isTeacher, isCourseOwner]
 
 
-    def get(self, request, cid):
+    def get(self, request, cid, aid=None):
+        
+        assignments = []
+        
+        if aid == None:
+            assignments = Assignment.objects.filter(course__id = cid, is_deleted=False) 
+        else:
+            assignments = Assignment.objects.filter(course__id = cid, id = aid, is_deleted=False)
 
-        assignments = Assignment.objects.filter(course__id = cid, is_deleted=False) 
 
-        data = []
-        for assignment in assignments:
-            data.append({
-                "id" : assignment.id,
-                # "group": assignment.group.title,
-                # "group_id": assignment.group.id,
-                "title" : assignment.title,
-                "download" : assignment.file.url,   
-                "course_title": assignment.course.title,
-                "course_image" : assignment.course.image.url,
-                "course_owner": assignment.course.owner.user.first_name,
-            })
-
-        return Response(data, status=status.HTTP_200_OK)
+        return Response(generateData("", False, AssignmentSerializer(assignments, many=True).data), status=status.HTTP_200_OK)
     
+
 
 
     def post(self, request, cid):
 
-        course = Course.objects.filter(id = cid).first()
-        # assignmentGroup = AssignmentGroup.objects.filter(course__id=cid, id=request.data["gid"], is_deleted=False).first()
-        # if assignmentGroup == None:
-        #     return Response({"err": True, "message": "Couldnt find the group"}, status=status.HTTP_404_NOT_FOUND)
-
+        course = Course.objects.get(id = cid)
+ 
         print("file is" ,request.FILES)
         image = request.FILES["file"]
 
+        hasCode = False
+        if request.data["has_code"] == 'true':
+            hasCode = True
         # assignment, created = Assignment.objects.get_or_create(title=request.data["title"], group=assignmentGroup, defaults={"course": course, "file":image, "type": request.data["assignment_type"]})
-        assignment, created = Assignment.objects.get_or_create(title=request.data["title"], defaults={"course": course, "file":image, "type": request.data["assignment_type"]})
+        assignment, created = Assignment.objects.get_or_create(title=request.data["title"], course__id = cid, defaults={"course": course, "file":image, "type": request.data["assignment_type"], "has_code": hasCode})
         if not created:
-            return Response({"err": True, "message": "Assignment already exists"}, status=status.HTTP_409_CONFLICT)
-        
-
+            return Response(generateData("Assignment already exists", True), status=status.HTTP_409_CONFLICT)
+            
+    
+    
         try:
             assignmentCode = AssignmentCode.objects.create(
                 title=request.data["code_title"], 
@@ -113,11 +141,11 @@ class AssignmentViewTeacher(APIView):
                 # final_cases=request.data["code_final_cases"],
                 compilation_score=request.data["code_compilation_score"],
                 running_score=request.data["code_running_score"],
-                imports=request.data["imports_code"],
                 test_cases_score=request.data["code_test_cases_score"],
                 final_cases_score=request.data["code_final_cases_score"],
-                code=request.data["solution_code"],
-                user_code=request.data["user_code"]
+                imports=request.data["imports_code"],
+                solution_code=request.data["solution_code"],
+                student_code=request.data["student_code"]
             )
 
             assignment.code = assignmentCode
@@ -125,9 +153,9 @@ class AssignmentViewTeacher(APIView):
         except Exception as e: 
             assignment.delete()
             print("ERROR IS", e)
-            return Response({"err": True, "message": "Something went wrong"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(generateData("Something went wrong", True), status=status.HTTP_400_BAD_REQUEST)
         
-        return Response({"err": False, "message" : "Assignment created"}, status=status.HTTP_200_OK)
+        return Response(generateData("Assignment Created", False, AssignmentSerializer(assignment).data), status=status.HTTP_200_OK)
     
 
     
@@ -140,7 +168,7 @@ class AssignmentViewTeacher(APIView):
 
         assignment = Assignment.objects.filter(id=aid).first()
         if assignment == None:
-            return Response({"err": True, "message": "Couldnt find the assignment"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(generateData("Couldnt find the assignment", True), status=status.HTTP_404_NOT_FOUND)
         
         assignment.title = request.data["title"]
         assignment.is_published = is_published
@@ -153,8 +181,6 @@ class AssignmentViewTeacher(APIView):
 
         assignmentCode.title=request.data["code_title"], 
         assignmentCode.description=request.data["code_description"],
-        # assignmentCode.test_cases=request.data["code_test_cases"],
-        # assignmentCode.final_cases=request.data["code_final_cases"],
         assignmentCode.compilation_score=request.data["code_compilation_score"],
         assignmentCode.running_score=request.data["code_running_score"],
         assignmentCode.test_cases_score=request.data["code_test_cases_score"],
@@ -165,7 +191,7 @@ class AssignmentViewTeacher(APIView):
 
         assignmentCode.save()
     
-        return Response({"err": False, "message" : "Assignment updated"}, status=status.HTTP_200_OK)
+        return Response(generateData("Assignment Updated", False, AssignmentSerializer(assignment).data), status=status.HTTP_200_OK)
 
  
     def delete(self, request, cid):
@@ -173,11 +199,18 @@ class AssignmentViewTeacher(APIView):
    
         obj = Assignment.objects.filter(id = aid, is_deleted=False).first()
         if obj == None:
-            return Response({"err": True, "message": "Couldnt find the Assignment"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(generateData("Couldnt find the Assignment", True), status=status.HTTP_404_NOT_FOUND)
+        
+
 
         obj.is_deleted = True
+        obj.title = "@deleted-" + str(time.time()) + "-" + obj.title
         obj.save()
-        return Response({"err": False, "message" : "Assignment deleted"}, status=status.HTTP_200_OK)
+
+
+        AssignmentRemark.objects.filter(submission__assignment = obj).delete()
+        AssignmentSubmission.objects.filter(assignment = obj).delete()
+        return Response(generateData("Assignment Deleted", False, AssignmentSerializer(obj).data), status=status.HTTP_200_OK)
             
   
 
@@ -188,33 +221,33 @@ class CodeRun(viewsets.ViewSet):
 
     def post(self, request, cid, aid):
 
-        course = Course.objects.get(id = cid)
-        assignment = Assignment.objects.filter(id = aid).first()
+        # course = Course.objects.get(id = cid)
+        # assignment = Assignment.objects.filter(id = aid).first()
         
         
-        if assignment == None:
-            return Response({"err": True, "message": "Couldnt find the Assignment"}, status=status.HTTP_404_NOT_FOUND)
+        # if assignment == None:
+        #     return Response(generateData("Couldnt find the Assignment"}, status=status.HTTP_404_NOT_FOUND)
         
-        assignmentCode = assignment.code
+        # assignmentCode = assignment.code
         
-        submission = AssignmentSubmission.objects.filter(student__user = request.user, assignment = assignment).first()
+        # submission = AssignmentSubmission.objects.filter(student__user = request.user, assignment = assignment).first()
         
-        if submission == None:
-            return Response({"err": True, "message": "Couldnt find the Submission"}, status=status.HTTP_404_NOT_FOUND)
+        # if submission == None:
+        #     return Response(generateData("Couldnt find the Submission"}, status=status.HTTP_404_NOT_FOUND)
         
-        defaultCode = assignmentCode.code
-        studentCode = submission.code
+        # defaultCode = assignmentCode.code
+        # studentCode = submission.code
 
-        f = NamedTemporaryFile(delete=True)
-        f.write(str.encode(studentCode + "\n\n" + defaultCode))
+        # f = NamedTemporaryFile(delete=True)
+        # f.write(str.encode(studentCode + "\n\n" + defaultCode))
 
-        f.flush()
-        temp_file = File(f, name="code.py")
+        # f.flush()
+        # temp_file = File(f, name="code.py")
 
-        submission.file = temp_file
-        submission.save()
+        # submission.file = temp_file
+        # submission.save()``
 
-        return Response({"err": False, "message" : "Running code", "data" : {"url" : submission.file.url}}, status=status.HTTP_200_OK)
+        return Response({"err": False, "message" : "Running code", "data" : {"url" : "submission.file.url"}}, status=status.HTTP_200_OK)
 
         
 

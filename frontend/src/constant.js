@@ -1,11 +1,14 @@
 const API_URL = "http://127.0.0.1:8000/"
 
+const ALERT_TIMEOUT = 3000
+
 const COURSE_URL = {
     teacher: {
         course: {
-            get: API_URL + 'course/teacher/',
+            get: API_URL + 'course/teacher/@cid/',
+            getAll: API_URL + 'course/teacher/',
             post: API_URL + 'course/teacher/',
-            put: API_URL + 'course/teacher/',
+            put: API_URL + 'course/teacher/@cid/',
             delete: API_URL + 'course/teacher/',
         },
         module: {
@@ -17,12 +20,26 @@ const COURSE_URL = {
             get: API_URL + "module/teacher/@cid/@gid/",
         },
         assignment: {
-            url: API_URL + "assignment/teacher/@cid/"
+            url: API_URL + "assignment/teacher/@cid/",
+            get: API_URL + "assignment/teacher/@cid/@aid/"
+        },
+        submission: {
+            get: API_URL + "submission/teacher/@cid/@aid/@sid/",
+            url: API_URL + "submission/teacher/@cid/@aid/"
+        },
+        grade: {
+            url : API_URL + "grade/teacher/@cid/@aid/@sid/"
         }
     },
     student:{
-        get: API_URL + 'course/student/',
-        put: API_URL + 'course/student/',
+        course:{
+            get: API_URL + 'course/student/',
+            put: API_URL + 'course/student/',
+        },
+        assignment: {
+            url: API_URL + "assignment/student/@cid/",
+            get: API_URL + "assignment/student/@cid/@aid/"
+        }
     }
 }
 
@@ -37,4 +54,4 @@ const COURSE_URL = {
 //     {type: "submit", colSpan: "col-span-2", label: ""},
 // ]
 
-export {API_URL, COURSE_URL}
+export {API_URL, COURSE_URL, ALERT_TIMEOUT}

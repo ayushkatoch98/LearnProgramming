@@ -1,2 +1,2 @@
 # LearnProgramming
-My dissertation project for advanced computer science uol.
+My dissertation project for advanced computer science uol. Work in progress

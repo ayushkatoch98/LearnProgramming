@@ -23,28 +23,31 @@ export default function FormGenerator(props) {
 
         switch (type) {
             case "text": {
-                return ( <TextInput {...attributes} />)
+                return (<TextInput {...attributes} />)
+            }
+            case "hidden": {
+                return (<TextInput {...attributes} />)
             }
             case "number": {
-                return ( <TextInput {...attributes} />)
+                return (<TextInput {...attributes} />)
             }
             case "password": {
-                return ( <TextInput {...attributes} />)
+                return (<TextInput {...attributes} />)
             }
 
             case "email": {
-                return ( <TextInput {...attributes} />)
+                return (<TextInput {...attributes} />)
             }
             case "editor": {
-                return ( <ReactQuill {...attributes}  className='max-h-30 overflow-auto border border-solid disabled:cursor-not-allowed disabled:opacity-50 bg-gray-50 border-gray-300 text-gray-900 focus:border-cyan-500 focus:ring-cyan-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-cyan-500 dark:focus:ring-cyan-500 rounded-lg p-2.5 text-sm' theme="snow"/>
+                return (<ReactQuill {...attributes} className='max-h-30 overflow-auto border border-solid disabled:cursor-not-allowed disabled:opacity-50 bg-gray-50 border-gray-300 text-gray-900 focus:border-cyan-500 focus:ring-cyan-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-cyan-500 dark:focus:ring-cyan-500 rounded-lg p-2.5 text-sm' theme="snow" />
                 )
             }
             case "file": {
-                return ( <FileInput {...attributes} />
+                return (<FileInput {...attributes} />
                 )
             }
             case "submit": {
-                return(
+                return (
                     <Button type="submit">
                         Submit
                     </Button>
@@ -52,17 +55,21 @@ export default function FormGenerator(props) {
             }
             case "select": {
 
-                return ( 
+                return (
                     <Select key={crypto.randomUUID()} {...attributes} >
-                        {   
+                        {
                             attributes.options.map(item => {
                                 return (
                                     <React.Fragment key={crypto.randomUUID()}>
                                         {
                                             item.selected ?
-                                                <option key={crypto.randomUUID()} value={item.id} selected>{item.value}</option> 
-                                            : 
-                                                <option key={crypto.randomUUID()} value={item.id}>{item.value}</option>
+                                                item?.value == undefined ?
+                                                    <option key={crypto.randomUUID()} value={item.id} selected>{item.title}</option> :
+                                                    <option key={crypto.randomUUID()} value={item.id} selected>{item.value}</option>
+                                                :
+                                                item?.value == undefined ?
+                                                    <option key={crypto.randomUUID()} value={item.id}>{item.title}</option> :
+                                                    <option key={crypto.randomUUID()} value={item.id}>{item.value}</option>
                                         }
                                     </React.Fragment>
                                 )
@@ -115,27 +122,39 @@ export default function FormGenerator(props) {
 
             case "button": {
                 return (
-                    
+
                     <Button {...attributes} type="button">
                         {attributes.value}
                     </Button>
                 )
             }
 
+            case "hr" : {
+                return (
+                    <hr {...attributes}></hr>
+                )
+            }
+
+            case "heading": {
+                return (<h3 {...attributes} className="mb-2 mt-0 text-2xl font-medium leading-tight  col-span-full">
+                    {attributes.value}
+                </h3>)
+            }
+
             case "code": {
                 return (
                     <CodeEditor
-                    {...attributes}
-                    language="python"
-                    placeholder="Please enter JS code."
-                    // onChange={(evn) => attributes.onChange(evn.target.value)}
-                    padding={5}
-                    style={{
-                      fontSize: 12,
-                      backgroundColor: "#f5f5f5",
-                      fontFamily: 'ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace',
-                    }}
-                  />
+                        {...attributes}
+                        language="python"
+                        placeholder="Please enter JS code."
+                        // onChange={(evn) => attributes.onChange(evn.target.value)}
+                        padding={5}
+                        style={{
+                            fontSize: 12,
+                            backgroundColor: "#f5f5f5",
+                            fontFamily: 'ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace',
+                        }}
+                    />
                 )
             }
         }
@@ -144,32 +163,38 @@ export default function FormGenerator(props) {
 
 
     return (
-            <form onSubmit={props.handleSubmit} className={`border p-10 shadow border-solid flex ${props.width} grid ${props.cols} flex-col gap-4`}>
-            <h3 className="mb-2 mt-0 text-2xl font-medium leading-tight text-black col-span-full">
+        <form onSubmit={props.handleSubmit} className={`border p-10 shadow border-solid flex ${props.width} grid ${props.cols} flex-col gap-4`}>
+            <h3 className="mb-2 mt-0 text-2xl font-medium leading-tight  col-span-full">
                 {props.heading}
             </h3>
-                {
-                    inputs.map((item, index) => {
-                        return (
-                            
-                            <div key={crypto.randomUUID()} className={` ${item.colSpan} `}>
-                                <div className="mb-2 block">
-                                    <Label
-                                        htmlFor="Title"
-                                        value={item.label}
-                                    />
-                                </div>
+            
+            {props.children}
 
-                                {getInputField(item.type, item)}
+            {
+                inputs.map((item, index) => {
+                    return (
+                        
+                      
+                        <div key={crypto.randomUUID()} className={` ${item.colSpan} ${ item.type == "hidden" ? "hidden" : "" } `}>
+                            
+                            <div className={`mb-2 block ${ item.type == "hr" || item.type == "heading" ? "hidden" : "" }`}>
+                                <Label
+                                    htmlFor="Title"
+                                    value={item.label}
+                                />
                             </div>
-                            
-                        )
-                    })
-                }
 
 
-                
-            </form>
+                            {getInputField(item.type, item)}
+                        </div>
+
+                    )
+                })
+            }
+
+
+
+        </form>
 
     )
 }

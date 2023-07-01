@@ -18,8 +18,8 @@ class Profile(models.Model):
     image = models.ImageField(upload_to="profile_pictures/")
     gender = models.CharField(max_length=1, null=False, default='O')
     dob = models.DateField(null=True)
-    created_on = models.DateTimeField(auto_now_add=True)
     group = models.CharField(max_length=20, choices=Roles.choices, default=Roles.STUDENT)
+    created_on = models.DateTimeField(auto_now_add=True)
 
 
     @receiver(post_save, sender=User)
@@ -43,7 +43,7 @@ class Course(models.Model):
     is_deleted = models.BooleanField(default=False)
     created_on = models.DateTimeField(auto_now_add=True)
     class Meta:
-        unique_together = (('owner', 'title'),)
+        unique_together = (('owner', 'title', 'is_deleted'),)
 
     def __str__(self):
         return str(self.title)
@@ -69,7 +69,7 @@ class ModuleGroup(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     class Meta:
-        unique_together = [['course', 'title']]
+        unique_together = [['course', 'title', 'is_deleted']]
     
     def __str__(self):
         return self.title
@@ -82,16 +82,16 @@ class Module(models.Model):
             PPT = "PPT"
 
     title = models.CharField(max_length=100, null=False)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    # course = models.ForeignKey(Course, on_delete=models.CASCADE)
     group = models.ForeignKey(ModuleGroup, on_delete=models.CASCADE)
     is_published = models.BooleanField(default=True)
     is_deleted = models.BooleanField(default=False)
     created_on = models.DateTimeField(auto_now_add=True)
     file = models.FileField(upload_to="modules/")
-    type = models.CharField(max_length=20, choices=ModuleType.choices, null=False)
+    type = models.CharField(max_length=20, choices=ModuleType.choices, null=False, default=ModuleType.PPT)
 
     class Meta:
-        unique_together = [['group', 'title']]
+        unique_together = [['group', 'title', 'is_deleted']]
     
     def __str__(self):
         return self.title
@@ -102,49 +102,37 @@ class AssignmentCode(models.Model):
     title = models.CharField(max_length=100, null=True)
     description = models.CharField(max_length=90000, null=True)
     imports = models.CharField(max_length=90000)
+    solution_code = models.CharField(max_length=90000, default="", null=True)
+    student_code = models.CharField(max_length=90000, default="", null=True)
     # final_cases = models.CharField(max_length=90000)
-    compilation_score = models.IntegerField(null=False, default=10)
-    running_score = models.IntegerField(null=False, default=10)
-    test_cases_score = models.IntegerField(null=False, default=10)
-    final_cases_score = models.IntegerField(null=False, default=10)
-    code = models.CharField(max_length=90000, default="", null=True)
-    user_code = models.CharField(max_length=90000, default="", null=True)
-
+    compilation_score = models.IntegerField(default=0)
+    running_score = models.IntegerField(default=0)
+    test_cases_score = models.IntegerField(default=0)
+    final_cases_score = models.IntegerField(default=0)
     
-
-
-# class AssignmentGroup(models.Model):
-#     title = models.CharField(max_length=100, null=False)
-#     is_published = models.BooleanField(default=True)
-#     is_deleted = models.BooleanField(default=False) 
-#     created_on = models.DateTimeField(auto_now_add=True)
-#     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-
-#     class Meta:
-#         unique_together = [['course', 'title']]
-
 
 class Assignment(models.Model):
 
     class AssignmentType(models.TextChoices):
-            REPORT = "REPORT"
-            PROGRAMMING = "PROGRAMMING"
-            BOTH = "BOTH"
+        REPORT = "REPORT"
+        PROGRAMMING = "PROGRAMMING"
+        BOTH = "BOTH"
 
     title = models.CharField(max_length=100, null=False, unique=True)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     # group = models.ForeignKey(AssignmentGroup, on_delete=models.CASCADE)
     is_published = models.BooleanField(default=True)
     is_deleted = models.BooleanField(default=False)
-    created_on = models.DateTimeField(auto_now_add=True)
     deadline = models.DateTimeField(null=True, default=None)  
+    has_code = models.BooleanField(default=False)
     code = models.ForeignKey(AssignmentCode, on_delete=models.CASCADE, null=True, default=None)
     file = models.FileField(upload_to="assignment/")
     type = models.CharField(max_length=20, choices=AssignmentType.choices, null=False)
     is_remark_published = models.BooleanField(default=False)
+    created_on = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = [['course', 'title']]
+        unique_together = [['course', 'title', 'is_deleted']]
 
 
 
@@ -152,9 +140,14 @@ class Assignment(models.Model):
         return self.title
 
 
- 
-
 class AssignmentSubmission(models.Model):
+
+    class SubmissionStatus(models.TextChoices):
+        NOTHING = "NOTHING"
+        PROGRAMMING = "PROGRAMMING"
+        REPORT = "REPORT"
+        BOTH = "BOTH"
+
     assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE)
     student = models.ForeignKey(Profile, on_delete=models.CASCADE)
     created_on = models.DateTimeField(auto_now=True)
@@ -162,26 +155,33 @@ class AssignmentSubmission(models.Model):
     code = models.CharField(max_length=90000, default="", null=True)
     late_submission = models.BooleanField(default=False)
     plag = models.FloatField(default=0, null=False)
+    report_submitted = models.BooleanField(default=False)
+    code_submitted = models.BooleanField(default=False)
+    graded = models.BooleanField(default=False)
 
 
     class Meta:
         unique_together = [['assignment', 'student']]
 
 class AssignmentRemark(models.Model):
-    assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE)
-    assignment_submission = models.ForeignKey(AssignmentSubmission, on_delete=models.CASCADE)
-    student = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    # remark_by = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    remark_by = models.CharField(max_length=50)
-    report_score = models.IntegerField(default=0)
+    # assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE)
+    
+    submission = models.OneToOneField(AssignmentSubmission, on_delete=models.CASCADE)
+    # student = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    remark_by = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    # remark_by = models.CharField(max_length=50)
+    report_remark = models.CharField(max_length=5000,default="No Remark Provided")
+    code_remark = models.CharField(max_length=5000,default="No Remark Provided")
+    report_score = models.IntegerField(default=0)    
     compilation_score = models.IntegerField(null=False, default=10)
     running_score = models.IntegerField(null=False, default=10)
     test_cases_score = models.IntegerField(null=False, default=10)
     final_cases_score = models.IntegerField(null=False, default=10)
+
     is_final_remark = models.BooleanField(default=True)
 
-    class Meta:
-        unique_together = [['assignment_submission', 'assignment']]
+    # class Meta:
+    #     unique_together = [['assignment_submission']]
 
 class NotificationDetail(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)

@@ -22,7 +22,7 @@ export default function CreateModuleGroup(props) {
     const setUser = props.setUser
 
     
-    const { moduleGroup, setModuleGroup } = props.moduleGroupState
+    // const { moduleGroup, setModuleGroup } = props.moduleGroupState
     
     const navigator = useNavigate()
 
@@ -46,6 +46,7 @@ export default function CreateModuleGroup(props) {
 
         var data = new FormData(e.target);
         let formObject = Object.fromEntries(data.entries());
+        formObject.is_published = e.target.checkbox22.checked
         
         console.log("sending", formObject)
         console.log("HEADERS", buildHeader(user))
@@ -55,13 +56,22 @@ export default function CreateModuleGroup(props) {
 
         axios.post(url, formObject, buildHeader(user)).then(res => {
             console.log("response", res)
-            showAlert(setAlert, "Success", res.data.message, "success")
-            setModuleGroup(prev => {
-                return [...prev, {id: res.data.data.id , value: res.data.data.title}]
+
+            
+            props.data.setCourse(prev => {
+                return {
+                    ...prev,
+                    moduleGroups: [...props.data.course.moduleGroups, {id : res.data.data.id, value: res.data.data.title}]
+                }
             })
+            showAlert(setAlert, "Success", res, "success")
+
+            // setModuleGroup(prev => {
+            //     return [...prev, {id: res.data.data.id , value: res.data.data.title}]
+            // })
         }).catch(err => {
             console.log("error", err)
-            showAlert(setAlert, "Error", err.response.data.message, "failure")
+            showAlert(setAlert, "Error", err, "failure")
         })
     }
 
@@ -80,10 +90,24 @@ export default function CreateModuleGroup(props) {
 
         axios.put(url, formObject, buildHeader(user)).then(res => {
             console.log("response", res)
-            showAlert(setAlert, "Success", res.data.message, "success")
-            setModuleGroup(prev => {
-                return [...prev, {id: res.data.data.id , value: res.data.data.title}]
+            showAlert(setAlert, "Success", res, "success")
+
+            const newGroups = []
+            for (var i = 0; i < props.data.course.moduleGroups.length; i++){
+                if (props.data.course.moduleGroups[i].id == res.data.data.id){
+                    newGroups.push({id: res.data.data.id, value: res.data.data.title})
+                    continue;    
+                }
+                newGroups.push(props.data.course.moduleGroups[i])
+            }
+
+            props.data.setCourse(prev => {
+                return {
+                    ...prev,
+                    moduleGroups: newGroups
+                }
             })
+
         }).catch(err => {
             console.log("error", err)
             showAlert(setAlert, "Error", err.response.data.message, "failure")
@@ -98,11 +122,12 @@ export default function CreateModuleGroup(props) {
     
     const createGroupForm = [
         {type: "text", name: "title", colSpan: "col-span-2", label: "Enter group title", required: true, placeholder: "Group name", id: "id" },
+        {type: "checkbox", name: "is_published", colSpan: "col-span-1", label: "Is Published", id: "checkbox22", options: [{value: "Is Published"}]},
         {type: "submit", colSpan: "col-span-2", label: ""}
     ]
 
     const updateGroupForm = [
-        {type: "select", name: "gid", colSpan: "col-span-1", label: "Select group to update", placeholder: "Select something", id: "id1", options: moduleGroup },
+        {type: "select", name: "gid", colSpan: "col-span-1", label: "Select group to update", placeholder: "Select something", id: "id1", options: props.data.course.moduleGroups },
         {type: "text", name: "title", colSpan: "col-span-1", label: "Enter group title", required: true, placeholder: "Course name", id: "id2" },
         {type: "checkbox", name: "is_published", colSpan: "col-span-1", label: "Is Published", id: "checkbox2", options: [{value: "Is Published"}]},
         {type: "submit", colSpan: "col-span-2", label: ""}
@@ -112,10 +137,10 @@ export default function CreateModuleGroup(props) {
     return (
         
 
-                <main>
+                <main className=''>
                     <div className="mx-automax-w-7xl py-6 px-1 sm:px-6 lg:px-8">
-                        <div className='flex items-center flex-col'>
-                            <div className='grid grid-cols-4 gap-5'>
+                        <div className='flex items-left flex-col'>
+                            <div className=' grid grid-cols-4 gap-5'>
                                 <FormGenerator heading="Create a new Group" inputs={createGroupForm} handleSubmit={handleGroupCreate} cols=" grid-cols-2 col-span-2">
 
                                 </FormGenerator>

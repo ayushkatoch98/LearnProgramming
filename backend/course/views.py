@@ -7,25 +7,33 @@ from rest_framework.views import APIView
 from rest_framework import generics, permissions
 import hashlib
 import time
-from useAuth.custom_permission import isStudent, isTeacher  
+from useAuth.custom_permission import isStudent, isTeacher, isCourseOwner
+from useAuth.serializers import CourseSerializer, CourseDetailSerializer
+from useAuth.utility import generateData
+from django.db import IntegrityError
 
+
+def getCourse(cid, request):   
+    return Course.objects.get(id = cid, owner__user = request.user, is_deleted = False)
+    
+        
 class CourseViewStudent(APIView):
     permission_classes = [permissions.IsAuthenticated, isStudent|isTeacher]
 
-    def get(self, request, id=None):
+    def get(self, request, cid=None):
 
         profile = Profile.objects.get(user = request.user)
-        data = None
 
         courses = []
-        if id == None:
+        if cid == None:
             courses = CourseDetail.objects.filter(student = profile)
         else:
-            courses = CourseDetail.objects.filter(course__id = id, student__user = request.user )
+            courses = CourseDetail.objects.filter(course__id = cid, student__user = request.user )
 
-        data = list(courses.values("course__id", "course__title", "course__image", "course__owner__user__first_name"))
+        a = [10,20,30]
+        a.append(20)
 
-        return Response(data, status=status.HTTP_200_OK)
+        return Response(generateData("", False, CourseDetailSerializer(courses).data), status=status.HTTP_200_OK)
         
     
     # to join a course
@@ -35,139 +43,103 @@ class CourseViewStudent(APIView):
         course = Course.objects.filter(token = request.data["token"], is_deleted=False).first()
         
         if course == None:
-            return Response({"err" : True, "message": "Invalid Token"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(generateData("Invalid Token", True, None), status=status.HTTP_404_NOT_FOUND)
         
         
         obj, created = CourseDetail.objects.get_or_create(student=profile, course=course)
         if created == False or obj.has_left == False:
-            return Response({"err" : False, "message": "Already a member of this course"}, status=status.HTTP_302_FOUND)
+            return Response(generateData("Already a member of this course", True, None), status=status.HTTP_302_FOUND)
         
         
         obj.has_left = False
         obj.save()
 
-        data = {
-            "username": profile.user.username,
-            "title": course.title,
-            "joined" : True,
-        }
-
-        return Response(data, status=status.HTTP_200_OK)
+        return Response(generateData("", False, CourseSerializer(course).data), status=status.HTTP_200_OK)
     
-    def delete(self, request, id=None):
+    def delete(self, request, cid=None):
 
-        if id == None:
-            return Response({"err": True, "message": "No couse id provided"}, status=status.HTTP_400_BAD_REQUEST)
+        if cid == None:
+            return Response(generateData("No course id provided", True), status=status.HTTP_400_BAD_REQUEST)
 
-        profile = Profile.objects.get(user = request.user)
-
-        obj = CourseDetail.objects.filter(course__id = id, student=profile, has_left=False).first()
-        if obj == None:
-            return Response({"err" : True, "message": "Not in this course"}, status=status.HTTP_404_NOT_FOUND)
         
-        obj.has_left = True
-        obj.save()
+        course = getCourse(cid, request)
 
-        return Response({"err": False, "message": "Left Course"}, status=status.HTTP_200_OK)
+        course.has_left = True
+        course.save()
+
+        return Response(generateData("", False, CourseSerializer(Course.objects.get(id = cid)).data), status=status.HTTP_200_OK)
 
 
 
 class CourseViewTeacher(APIView):
     permission_classes = [permissions.IsAuthenticated, isTeacher]
 
- 
-    def get(self, request, id=None):
+    def get(self, request, cid=None):
             
         courses = []
-        if id == None:
+        if cid == None:
             courses = Course.objects.filter(owner__user = request.user, is_deleted=False)
         else:
-            courses = Course.objects.filter(owner__user = request.user, is_deleted=False, id = id)
+            courses = Course.objects.filter(owner__user = request.user, is_deleted=False, id = cid)
 
-        data = []
-        for course in courses:
-            image = course.image
-            if course.image == None or course.image == "":
-                image = ""
-            else:
-                image = course.image.url
-            data.append({
-                "id": course.id,
-                "title" : course.title,
-                "description" : course.description,
-                "image" : image,
-                "token": course.token,
-            })
-
-            
-        
-        return Response(data, status=status.HTTP_200_OK)
+        courses = CourseSerializer(courses, many=True)
+        return Response(courses.data, status=status.HTTP_200_OK)
     
 
     def post(self, request):
         profile = Profile.objects.get(user = request.user)
-
+        print("WOW DATA" , request.data)
         toHash = request.user.username + " " + str(time.time())
         hash_object = hashlib.md5(toHash.encode())
         print("hash", hash_object.hexdigest())
-        image = request.FILES["file"]
-        course, created = Course.objects.get_or_create(title=request.data["title"], owner=profile, defaults={"image":image, "description": request.data["description"], "token":hash_object.hexdigest()})
-        if not created:
-            return Response({"err" : True, "message": "Course already exists"}, status.HTTP_409_CONFLICT)
+        # image = request.FILES["file"]
+        
+        course = None
+        try:
+            course = Course.objects.create(title=request.data["title"], owner=profile, image=None, description=request.data["description"], token=hash_object.hexdigest())
+        except IntegrityError as err:
+            print("error" , err)
+            return Response(generateData("Course already exists" + str(err), True), status.HTTP_409_CONFLICT)
 
-        data = {
-            "id" : course.id,
-            "title": course.title,
-            "image": course.image.url,
-            "token": course.token
-        }
 
-        print("Data is", data, CourseDetail, profile, course)
         # joining course as teacher     
         try:
             obj = CourseDetail.objects.create(student=profile, course=course)
-            if created == False and obj.has_left == True:
-                return Response({"err" : False, "message": "Already a member of this course"}, status=status.HTTP_302_FOUND)
-        except:
+        except IntegrityError as err:
+            print("error", err)
             course.delete()
-            return Response({"err" : False, "message": "Something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(generateData("Something went wrong" + str(err), True), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        
-        obj.has_left = False
-        obj.save()
-
-        
-        return Response(data, status=status.HTTP_200_OK)
+    
+        return Response(generateData("Course Created", False, CourseSerializer(course).data), status=status.HTTP_200_OK)
     
 
-    def put(self, request, id=None):
+    def put(self, request, cid):
 
-        obj = Course.objects.filter(id = id, owner__user = request.user, is_deleted=False).first()
-        if obj == None: 
-            return Response({"err" : True, "message": "Course not found"}, status.HTTP_404_NOT_FOUND)
-        if "file" in request.FILES and request.FILES["file"] != None:
-            obj.image=request.FILES["file"]
+    
+        course = getCourse(cid, request)
 
-        print("FILE IS", request.FILES)
-
-        obj.title=request.data["title"]
-        obj.description=request.data["description"]
-        
         try:
-            obj.save()
-        except:
-            return Response( {"err" : False, "message" : "title already exists"}, status.HTTP_409_CONFLICT)
 
-        return Response( {"err" : False, "message" : "updated"}, status.HTTP_200_OK)
+            if "file" in request.FILES and request.FILES["file"] != None:
+                course.image=request.FILES["file"]
+
+            course.title=request.data["title"]
+            course.description=request.data["description"]
+            course.save()
+        except Exception as ex:
+            print("ERR IS", ex)
+            return Response( generateData("title already exists", True), status.HTTP_409_CONFLICT)
+
+        return Response( generateData("Course Updated", False, CourseSerializer(course).data), status.HTTP_200_OK)
     
 
-    def delete(self, request, id=None):
+    def delete(self, request, cid=None):
 
-        obj = Course.objects.filter(id = id, owner__user = request.user, is_deleted = False).first()
-        if obj == None:
-            return Response({"err" : True, "message": "No course found or it has already been deleted"}, status.HTTP_404_NOT_FOUND)
+        course = getCourse(cid, request)
         
-        obj.is_deleted = True
-        obj.save()
+        course.is_deleted = True
+        course.title = "@deleted-" + str(time.time()) + "-" + course.title
+        course.save()
 
-        return Response({"err": False, "message": "Deleted"}, status.HTTP_200_OK)
+        return Response(generateData("Course Deleted", False, CourseSerializer(course).data), status.HTTP_200_OK)

@@ -33,8 +33,8 @@ export default function Login(props) {
         
         axios.post(API_URL + "auth/login/", formObject).then((res) => {
             console.log("response", res)
-            showAlert(setAlert, "Success", res.data.message, "success")
-            hideAlert(setAlert);
+            // showAlert(setAlert, "Success", res, "success")
+            
             setUser({
                     id: res.data.id,
                     first_name: res.data.first_name,
@@ -49,8 +49,7 @@ export default function Login(props) {
             navigator("/")
         }).catch((err) => {
             console.log("error", err)
-            showAlert(setAlert, "Error", err.response.data.message, "failure")
-            hideAlert(setAlert);
+            showAlert(setAlert, "Error", err, "failure")
             setUser(prev => (
                 {
                     ...prev,

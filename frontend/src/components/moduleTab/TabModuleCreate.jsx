@@ -1,17 +1,17 @@
 import { Fragment, useContext, useEffect, useState } from 'react'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import Navigation from '../../components/Navigation';
+import Navigation from '../Navigation';
 import { Button, Label, TextInput, FileInput } from 'flowbite-react';
-import Alerts from '../../components/Alert';
+import Alerts from '../Alert';
 import axios from 'axios';
 import { API_URL, COURSE_URL } from '../../constant';
 import { buildHeader, buildURL, hideAlert, showAlert } from '../../utility';
 import { useNavigate, useParams } from 'react-router-dom';
-import AppContext from '../../components/AppContext';
+import AppContext from '../AppContext';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import FormGenerator from '../../components/FormGenerator';
+import FormGenerator from '../FormGenerator';
 // import { Button, Label, } from 'flowbite-react';
 
 
@@ -22,7 +22,6 @@ export default function CreateModule(props) {
     const setUser = props.setUser
 
 
-    const { moduleGroup, setModuleGroup } = props.moduleGroupState
     
     
 
@@ -62,10 +61,38 @@ export default function CreateModule(props) {
         
         axios.post(url, formObject, buildHeader(user)).then(res => {
             console.log("response", res)
-            showAlert(setAlert, "Success", res.data.message, "success")
+            showAlert(setAlert, "Success", res, "success")
+
+            const newModules = {}
+            newModules[formObject.gid] = []
+            // giving error when creating new group + group doesnt show in the frontend
+            for (var key in props.data.course.modules){
+                console.log("Group Loop", key)
+                if (!(key in newModules)){
+                    newModules[key] = []
+                    console.log("KEYS" , newModules)
+                }
+                for(var i = 0; i < props.data.course.modules[key].length; i++){
+                    console.log("ADD TO KEY", key)
+                    newModules[key].push(props.data.course.modules[key][i]);
+                }
+            }
+
+            newModules[res.data.data.group.id + ""].push( 
+                {   
+                    ...res.data.data
+                } 
+            );
+            props.data.setCourse(prev => {
+                return {
+                    ...prev,
+                    modules: newModules
+                }
+            })
+
         }).catch(err => {
             console.log("error", err)
-            showAlert(setAlert, "Error", err.response.data.message, "failure")
+            showAlert(setAlert, "Error", err, "failure")
         })
         
     }
@@ -108,7 +135,7 @@ export default function CreateModule(props) {
 
     const createModuleForm = [
         // {type: "text", disabled: true, value: tokenValue, name: "nothing", colSpan: "col-span-2", label: "Invite Token", required: true, placeholder: "Course name", id: "id"},
-        {type: "select", name: "gid", colSpan: "col-span-1", label: "Select group", placeholder: "Select something", id: "id", options: moduleGroup },
+        {type: "select", name: "gid", colSpan: "col-span-1", label: "Select group", placeholder: "Select something", id: "id", options: props.data.course.moduleGroups },
         {type: "text", name: "title", colSpan: "col-span-1", label: "Module Title", required: true, placeholder: "Module Title", id: "id" },
         {type: "file", name: "file", colSpan: "col-span-1", label: "Upload Module", required: true, placeholder: "placeholder", id: "id", accept:".pdf,.ppt,.pptx,.txt" },
         {type: "checkbox", name: "is_published", colSpan: "col-span-1", label: "Publish", placeholder: "placeholder", id: "checkbox1", cols: "grid-cols-2", options: [{value: "Publish", defaultChecked: true}] },
@@ -134,7 +161,7 @@ export default function CreateModule(props) {
 
                 <main>
                     <div className="mx-automax-w-7xl py-6 px-1 sm:px-6 lg:px-8">
-                        <div className='flex items-center flex-col'>
+                        <div className='flex items-left flex-col'>
                             <div className='grid grid-cols-4 gap-5'>
           
                                 <FormGenerator heading="Create a module" inputs={createModuleForm} handleSubmit={handleModuleCreate} cols=" grid-cols-2 col-span-4">

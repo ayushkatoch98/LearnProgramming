@@ -15,7 +15,7 @@ import FormGenerator from '../../components/FormGenerator';
 // import { Button, Label, } from 'flowbite-react';
 
 
-export default function Join(props) {
+export default function CourseJoin(props) {
 
     const [alert, setAlert] = useState({
         title: "",
@@ -28,7 +28,7 @@ export default function Join(props) {
     const { user, setUser } = useContext(AppContext);
     console.log("User", user)
     const navigator = useNavigate()
-
+    
 
     function handleSubmit(e){
         e.preventDefault();
@@ -39,7 +39,7 @@ export default function Join(props) {
         
         console.log("sending", formObject)
         
-        var url = buildURL(COURSE_URL.student.post, user);
+        var url = buildURL(COURSE_URL.student.course.get, user);
         console.log("URL is ", url)
         axios.post(url, formObject, buildHeader(user)).then(res => {
             console.log("response", res)
@@ -65,12 +65,7 @@ export default function Join(props) {
 
             <div className="min-h-full">
 
-                <Navigation></Navigation>
-                <header className="bg-white shadow">
-                    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                        <h1 className="text-3xl font-bold tracking-tight text-gray-900">{props.header}</h1>
-                    </div>
-                </header>
+                <Navigation header={props.header}></Navigation>
                 <Alerts hidden={alert.hidden} title={alert.title} description={alert.description} color={alert.color}></Alerts>
 
                 <main>
@@ -104,7 +99,7 @@ export default function Join(props) {
                                             value="Course Description"
                                         />
                                     </div>
-                                    <ReactQuill required name="description" id='texteditor' style={{ height: "300px" }} className='mb-5 text-black border rounded' theme="snow" value={editorValue} onChange={setEditorValue} />;
+                                    <ReactQuill required name="description" id='texteditor' style={{ height: "300px" }} className='mb-5  border rounded' theme="snow" value={editorValue} onChange={setEditorValue} />;
                                 </div>
 
                                 <div
