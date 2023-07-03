@@ -13,7 +13,10 @@ import ReactQuill from 'react-quill';
 import CodeEditor from '@uiw/react-textarea-code-editor';
 import 'react-quill/dist/quill.snow.css';
 import React from 'react';
-// import { Button, Label, } from 'flowbite-react';
+import Datepicker from "react-tailwindcss-datepicker";
+import DateTimePicker from 'react-datetime-picker'
+
+
 
 export default function FormGenerator(props) {
 
@@ -129,7 +132,7 @@ export default function FormGenerator(props) {
                 )
             }
 
-            case "hr" : {
+            case "hr": {
                 return (
                     <hr {...attributes}></hr>
                 )
@@ -139,6 +142,18 @@ export default function FormGenerator(props) {
                 return (<h3 {...attributes} className="mb-2 mt-0 text-2xl font-medium leading-tight  col-span-full">
                     {attributes.value}
                 </h3>)
+            }
+
+            case "datetime": {
+                const DT = React.useMemo( () => <DateTimePicker {...attributes} />, [] );
+                return (
+                    // <div inline-datepicker="true" data-date="02/25/2022"></div>
+
+                    <>
+                        {DT}
+                        </>
+
+                )
             }
 
             case "code": {
@@ -167,24 +182,24 @@ export default function FormGenerator(props) {
             <h3 className="mb-2 mt-0 text-2xl font-medium leading-tight  col-span-full">
                 {props.heading}
             </h3>
-            
+
             {props.children}
 
             {
                 inputs.map((item, index) => {
                     return (
-                        
-                      
-                        <div key={crypto.randomUUID()} className={` ${item.colSpan} ${ item.type == "hidden" ? "hidden" : "" } `}>
-                            
-                            <div className={`mb-2 block ${ item.type == "hr" || item.type == "heading" ? "hidden" : "" }`}>
+
+
+                        <div key={crypto.randomUUID()} className={` ${item.colSpan} ${item.type == "hidden" ? "hidden" : ""} `}>
+
+                            <div className={`mb-2 block ${item.type == "hr" || item.type == "heading" ? "hidden" : ""}`}>
                                 <Label
                                     htmlFor="Title"
                                     value={item.label}
                                 />
                             </div>
 
-
+                            {/* <AAA></AAA> */}
                             {getInputField(item.type, item)}
                         </div>
 

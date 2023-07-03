@@ -21,11 +21,12 @@ export default function CreateAssignment(props) {
     const user = props.user
     const setUser = props.setUser
 
-
+    const [DT, setDatetime] = useState(new Date());
     const [codeFormVisibility, setCodeFormVisibility] = useState(false);
     const codeProblem = createRef('');
     const codeSyntax = createRef('//Enter your code below');
     const codeFunctionDef = createRef('//Enter your code below');
+    const datetimeRef = createRef('//Enter your code below');
     const codeSolution = createRef('//Enter your code below');
     const fromVisi = createRef(true);
     // const [reload, setReload] = useState(true)
@@ -46,7 +47,7 @@ export default function CreateAssignment(props) {
     function handleSubmit(e){
         e.preventDefault();
 
-        console.log("HMMMMM", codeProblem.current.value, codeFunctionDef.current.value, codeSolution.current.value, codeSyntax.current.value)
+        // console.log("HMMMMM", codeProblem.current.value, codeFunctionDef.current.value, codeSolution.current.value, codeSyntax.current.value)
         var data = new FormData(e.target);
         const cProblem = codeProblem.current.value;
         const cFuncDef = codeFunctionDef.current.value;
@@ -80,7 +81,7 @@ export default function CreateAssignment(props) {
         console.log("sending", formObject)
         console.log("HEADERS", buildHeader(user))
         
-        var url = buildURL(COURSE_URL.teacher.assignment.url.replace("@cid", props.cid), user);
+        var url = buildURL(COURSE_URL.teacher.assignment.post.replace("@cid", props.cid), user);
    
         axios.post(url, formObject, buildHeader(user)).then(res => {
             console.log("response", res)
@@ -136,6 +137,7 @@ export default function CreateAssignment(props) {
         {type: "file", name: "file", colSpan: "col-span-2", label: "Upload Module", required: true, placeholder: "placeholder", id: "id", accept:".pdf,.ppt,.pptx,.txt" },
         {type: "checkbox", name: "is_published", colSpan: "col-span-1", label: "Publish", placeholder: "placeholder", id: "checkbox10", cols: "grid-cols-1", options: [{value: "Publish", defaultChecked: true}] },
         {type: "checkbox", name: "has_code", colSpan: "col-span-1", label: "Is Coding", placeholder: "placeholder", id: "checkbox9", cols: "grid-cols-1", onChange: toggleCodeView,  ref: fromVisi, options: [{value: "Is coding", defaultChecked:{codeFormVisibility}}] },
+        {type: "datetime", name: "deadline", colSpan: "col-span-2", label: "Assignment Deadline", required: true, placeholder: "Assignment Deadline", id: "id", onChange: setDatetime, value: DT },
         
 
         // {type: "number", name: "code_compilation_score", colSpan: "col-span-2", label: "presentation", placeholder: "compilation_score", id: "id" },

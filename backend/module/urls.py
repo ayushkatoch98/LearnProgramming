@@ -9,5 +9,6 @@ urlpatterns = [
     path("teacher/<int:cid>/<int:mid>/", ModuleViewTeacher.as_view()),
 
     path("student/<int:cid>/", ModuleViewStudent.as_view(), name='module'), # joining
+    path("teacher/<int:cid>/<int:mid>/", ModuleViewStudent.as_view()),
 
 ]

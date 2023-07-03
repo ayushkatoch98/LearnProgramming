@@ -33,7 +33,8 @@ export default function ModuleList(props) {
         const header = buildHeader(user);
         header.data = data
 
-        const url = buildURL(COURSE_URL.teacher.module.url.replace("@cid", props.cid), user)
+        const url = buildURL(COURSE_URL.teacher.module.delete.replace("@cid", props.cid), user)
+        console.log("URL",  url)
         axios.delete(url, header ).then( res => {
             console.log("Response Del", res)
             showAlert(setAlert, "Deleted", res, "success");

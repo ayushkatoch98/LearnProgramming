@@ -22,14 +22,18 @@ export default function CourseList(props) {
 
     const {user, setUser} = useContext(AppContext);
     const [data, setData] = useState([])
-
+    const mode = user.group.toLowerCase();
     console.log("User", user)
     const navigator = useNavigate()
 
     useEffect(() => {
-        axios.get(buildURL(COURSE_URL.teacher.course.getAll, user), buildHeader(user)).then(res => {
+
+        const url = mode == "teacher" ? COURSE_URL.teacher.course.get : COURSE_URL.student.course.get
+        axios.get(buildURL(url, user), buildHeader(user)).then(res => {
             console.log("response", res)
-            setData(res.data);
+           
+            setData(res.data.data)
+           
         }).catch(err => {
             console.log("err", err)
         })

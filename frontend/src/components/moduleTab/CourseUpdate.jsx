@@ -29,7 +29,6 @@ export default function CourseUpdate(props) {
     const user = props.user
     const {course, setCourse} = props.data
 
-    console.log("Course", course)
     const navigator = useNavigate()
 
     function handleDelete(e) {

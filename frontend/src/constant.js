@@ -5,23 +5,27 @@ const ALERT_TIMEOUT = 3000
 const COURSE_URL = {
     teacher: {
         course: {
-            get: API_URL + 'course/teacher/@cid/',
-            getAll: API_URL + 'course/teacher/',
+            getSingle: API_URL + 'course/teacher/@cid/',
+            get: API_URL + 'course/teacher/',
             post: API_URL + 'course/teacher/',
             put: API_URL + 'course/teacher/@cid/',
-            delete: API_URL + 'course/teacher/',
+            delete: API_URL + 'course/teacher/@cid/',
         },
         module: {
-            url: API_URL + "module/teacher/@cid/",
-            get: API_URL + "module/teacher/@cid/@mid/",
+            get: API_URL + "module/teacher/@cid/",
+            gitSingle: API_URL + "module/teacher/@cid/@mid/",
+            delete: API_URL + "module/teacher/@cid/",
+            post: API_URL + "module/teacher/@cid/",
         },
         group: {
             url: API_URL + "group/teacher/@cid/",
             get: API_URL + "module/teacher/@cid/@gid/",
         },
         assignment: {
-            url: API_URL + "assignment/teacher/@cid/",
-            get: API_URL + "assignment/teacher/@cid/@aid/"
+            get: API_URL + "assignment/teacher/@cid/",
+            getSingle: API_URL + "assignment/teacher/@cid/@aid/",
+            delete: API_URL + "assignment/teacher/@cid/",
+            post: API_URL + "assignment/teacher/@cid/"
         },
         submission: {
             get: API_URL + "submission/teacher/@cid/@aid/@sid/",
@@ -29,16 +33,40 @@ const COURSE_URL = {
         },
         grade: {
             url : API_URL + "grade/teacher/@cid/@aid/@sid/"
+        },
+        // get joined student details courses
+        courseDetail: {
+            get: API_URL + 'coursedetail/teacher/@cid/',
+            delete: API_URL + 'coursedetail/teacher/@cid/',
         }
     },
     student:{
-        course:{
-            get: API_URL + 'course/student/',
-            put: API_URL + 'course/student/',
+   
+        // view modules 
+        module: {
+            get: API_URL + "module/student/@cid/",
         },
+        // list of joined courses
+        course: {
+            get: API_URL + 'course/student/',
+            getSingle: API_URL + 'course/student/@cid/',
+        },
+        // list of assignments
         assignment: {
-            url: API_URL + "assignment/student/@cid/",
-            get: API_URL + "assignment/student/@cid/@aid/"
+            get: API_URL + "assignment/student/@cid/",
+            getSingle: API_URL + "assignment/student/@cid/@aid/"
+        },
+        // get submitted data
+        // post a new submission 
+        submission: {
+            get: API_URL + "submission/student/@cid/@aid/",
+            post: API_URL + "submission/student/@cid/@aid/"
+        },
+        // get joined courses 
+        // join / leave a course 
+        courseDetail: {
+            get: API_URL + 'coursedetail/student/',
+            getSingle: API_URL + 'coursedetail/student/@cid/',
         }
     }
 }

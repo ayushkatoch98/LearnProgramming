@@ -120,6 +120,7 @@ class LoginAPI(KnoxLoginView):
             "username": user.username,
             "email": user.email,
             "group": profile.group,
+            "image": profile.image.url,
             "token": a["token"],
             "expiry": a["expiry"],
         }

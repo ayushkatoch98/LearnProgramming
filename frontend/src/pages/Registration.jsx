@@ -69,13 +69,8 @@ export default function Registration(props) {
 
             <div className="min-h-full">
 
-                <Navigation></Navigation>
-                <header className="bg-white shadow">
-                    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                        <h1 className="text-3xl font-bold tracking-tight text-gray-900">{props.header}</h1>
-                        {/* <p className="tracking-tight text-gray-900">{props.header}</p> */}
-                    </div>
-                </header>
+                <Navigation hide="true" header={props.header}></Navigation>
+                
                 <Alerts hidden={alert.hidden} title={alert.title} description={alert.description} color={alert.color}></Alerts>
 
                 <main>

@@ -7,5 +7,6 @@ urlpatterns = [
     # path("dashboard/", CourseView.as_view(), name="course"),
     # path("dashboard/<int:id>/", CourseView.as_view(), name="course")
     path("teacher/<int:cid>/", GroupView.as_view(), name="group"),
+    path("student/<int:cid>/", GroupView.as_view(), name="group"),
     # path("teacher/", GroupView.as_view(), name="group")
 ]

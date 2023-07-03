@@ -21,55 +21,19 @@ class CourseViewStudent(APIView):
     permission_classes = [permissions.IsAuthenticated, isStudent|isTeacher]
 
     def get(self, request, cid=None):
-
+        
         profile = Profile.objects.get(user = request.user)
-
         courses = []
+        courseDetails = []
         if cid == None:
-            courses = CourseDetail.objects.filter(student = profile)
+            courseDetails = CourseDetail.objects.filter(student = profile)
         else:
-            courses = CourseDetail.objects.filter(course__id = cid, student__user = request.user )
+            courseDetails = CourseDetail.objects.filter(course__id = cid)
 
-        a = [10,20,30]
-        a.append(20)
+        for courseDetail in courseDetails:
+            courses.append(courseDetail.course)
 
-        return Response(generateData("", False, CourseDetailSerializer(courses).data), status=status.HTTP_200_OK)
-        
-    
-    # to join a course
-    def post(self, request):
-        profile = Profile.objects.get(user = request.user)
-        
-        course = Course.objects.filter(token = request.data["token"], is_deleted=False).first()
-        
-        if course == None:
-            return Response(generateData("Invalid Token", True, None), status=status.HTTP_404_NOT_FOUND)
-        
-        
-        obj, created = CourseDetail.objects.get_or_create(student=profile, course=course)
-        if created == False or obj.has_left == False:
-            return Response(generateData("Already a member of this course", True, None), status=status.HTTP_302_FOUND)
-        
-        
-        obj.has_left = False
-        obj.save()
-
-        return Response(generateData("", False, CourseSerializer(course).data), status=status.HTTP_200_OK)
-    
-    def delete(self, request, cid=None):
-
-        if cid == None:
-            return Response(generateData("No course id provided", True), status=status.HTTP_400_BAD_REQUEST)
-
-        
-        course = getCourse(cid, request)
-
-        course.has_left = True
-        course.save()
-
-        return Response(generateData("", False, CourseSerializer(Course.objects.get(id = cid)).data), status=status.HTTP_200_OK)
-
-
+        return Response(generateData("", False, CourseSerializer(courses, many=True).data), status=status.HTTP_200_OK)
 
 class CourseViewTeacher(APIView):
     permission_classes = [permissions.IsAuthenticated, isTeacher]
@@ -83,7 +47,7 @@ class CourseViewTeacher(APIView):
             courses = Course.objects.filter(owner__user = request.user, is_deleted=False, id = cid)
 
         courses = CourseSerializer(courses, many=True)
-        return Response(courses.data, status=status.HTTP_200_OK)
+        return Response(generateData("", False, courses.data), status=status.HTTP_200_OK)
     
 
     def post(self, request):

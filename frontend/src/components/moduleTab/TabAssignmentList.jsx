@@ -36,10 +36,10 @@ export default function AssignmentList(props) {
         const header = buildHeader(user);
         header.data = data
 
-        const url = buildURL(COURSE_URL.teacher.assignment.url.replace("@cid", props.cid), user)
+        const url = buildURL(COURSE_URL.teacher.assignment.delete.replace("@cid", props.cid), user)
         axios.delete(url, header ).then( res => {
             console.log("Response Del", res)
-            showAlert(setAlert, "Deleted", res, "failure");
+            showAlert(setAlert, "Deleted", res, "success");
 
             var newAssignments = []
 
@@ -79,7 +79,7 @@ export default function AssignmentList(props) {
                         <div className='flex items-left flex-col'>
                             <div className='border p-10 shadow border-solid w-full flex-col gap-4'>
 
-                                <DefaultAccordion cid={cid} onDelete={handleDelete} onDownload="none" data={props.data.course.assignments}></DefaultAccordion>
+                                <DefaultAccordion header="Assignments" cid={cid} onDelete={handleDelete} onDownload="none" data={props.data.course.assignments}></DefaultAccordion>
                                 
                             </div> 
 

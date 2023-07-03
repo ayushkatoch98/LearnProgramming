@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'assignment',
     'remark',
     'group',
-    'submission'
+    'submission',
+    'courseDetail'
     # 'django_extensions',
 ]
 

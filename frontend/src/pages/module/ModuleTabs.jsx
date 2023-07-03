@@ -17,14 +17,14 @@ import ModuleHome from '../../components/moduleTab/TabModulehome';
 import CreateModule from '../../components/moduleTab/TabModuleCreate';
 import CreateAssignment from '../../components/moduleTab/TabAssignmentCreate';
 import CreateModuleGroup from '../../components/moduleTab/TabGroupCreate';
-// import ModuleView from '../../components/moduleTab/TabModuleList';
 import { buildURL, buildHeader } from '../../utility';
 import { COURSE_URL } from '../../constant';
 import AssignmentList from '../../components/moduleTab/TabAssignmentList';
 import CourseUpdate from '../../components/moduleTab/CourseUpdate';
 import ModuleList from '../../components/moduleTab/TabModuleList';
+import TabStudentList from '../../components/moduleTab/TabStudentList';
 
-async function loadGroups(user, cid, setAlert) {
+async function loadGroups(user, cid, setAlert, userType) {
     // GET ALL GROUPS 
     try {
         const res = (await axios.get(buildURL(COURSE_URL.teacher.group.url.replace("@cid", cid), user), buildHeader(user)));
@@ -49,19 +49,20 @@ async function loadGroups(user, cid, setAlert) {
 
 
 
-async function loadAssignments(user, cid, setAlert) {
+async function loadAssignments(user, cid, setAlert, userType) {
     try {
-        const res = await axios.get(buildURL(COURSE_URL.teacher.assignment.url.replace("@cid", cid), user), buildHeader(user));
+        const url = userType == "teacher" ? COURSE_URL.teacher.assignment.get : COURSE_URL.student.assignment.get
+        const res = await axios.get(buildURL(url.replace("@cid", cid), user), buildHeader(user));
         const data = await res.data.data;
 
         const assignmentData = { "Assignments": [] }
 
         for (var i = 0; i < data.length; i++) {
-            console.log("Loop ", i)
+            
             var temp = data[i];
-            temp.group = {
-                title: "Assignments"
-            }
+            // temp.group = {
+            //     title: "Assignments"
+            // }
             assignmentData.Assignments.push(temp)
         }
 
@@ -75,15 +76,17 @@ async function loadAssignments(user, cid, setAlert) {
     }
 }
 
-async function loadHome(user, cid, setAlert) {
+async function loadHome(user, cid, setAlert, userType) {
     try {
-        const res = await axios.get(buildURL(COURSE_URL.teacher.course.get.replace("@cid", cid), user), buildHeader(user));
-        const data = await res.data;
 
-        console.log("response HOME", data[0])
+        const url = userType == "teacher" ? COURSE_URL.teacher.course.get : COURSE_URL.student.course.getSingle
+        const res = await axios.get(buildURL(url.replace("@cid", cid), user), buildHeader(user));
+        
+        const data = await res.data.data;
         if (data.length == 0) {
             showAlert(setAlert, "Course doesnt exists", "redirecting in 3 seconds");
         }
+
         return data[0];
     } catch (err) {
         console.log("course data error", err)
@@ -92,12 +95,12 @@ async function loadHome(user, cid, setAlert) {
     }
 }
 
-async function loadModules(user, cid, setAlert, totalGroups) {
+async function loadModules(user, cid, setAlert, userType, totalGroups) {
     try {
-        const res = await axios.get(buildURL(COURSE_URL.teacher.module.url.replace("@cid", cid), user), buildHeader(user))
+        const url = userType == "teacher" ? COURSE_URL.teacher.module.get : COURSE_URL.student.module.get
+        const res = await axios.get(buildURL(url.replace("@cid", cid), user), buildHeader(user))
         const data = res.data.data;
-
-
+        
         const moduleData = {}
         for (var i = 0; i < data.length; i++) {
 
@@ -118,12 +121,12 @@ async function loadModules(user, cid, setAlert, totalGroups) {
     }
 }
 
-async function loadAllData(user, cid, setAlert) {
+async function loadAllData(user, cid, setAlert, userType) {
 
-    const home = await loadHome(user, cid, setAlert);
-    const groups = await loadGroups(user, cid, setAlert);
-    const modules = await loadModules(user, cid, setAlert, groups.length);
-    const assignments = await loadAssignments(user, cid, setAlert);
+    const home = await loadHome(user, cid, setAlert, userType);
+    const groups = await loadGroups(user, cid, setAlert, userType);
+    const modules = await loadModules(user, cid, setAlert, userType, groups.length);
+    const assignments = await loadAssignments(user, cid, setAlert, userType);
 
     // console.log("home", home, "module", modules, "Groups", groups, "assignments", assignments)
     return {
@@ -157,6 +160,8 @@ export default function ModuleTabs(props) {
         moduleGroups: [],
     })
 
+    const userType = user.group.toLowerCase()
+
     const navigator = useNavigate()
     const { cid } = useParams()
 
@@ -164,7 +169,7 @@ export default function ModuleTabs(props) {
     useEffect(() => {
         console.log("User", user)
 
-        loadAllData(user, cid, setAlert).then(res => {
+        loadAllData(user, cid, setAlert, userType).then(res => {
             console.log("LoadAllData Response", res)
             setCourse(prev => {
                 return {
@@ -198,7 +203,7 @@ export default function ModuleTabs(props) {
             tabs.push({ title: "Create Module", icon: MdDashboard, children: <CreateModule cid={cid} user={user} setUser={setUser} data={{ course, setCourse }} setAlert={setAlert}/>, attributes: {} })
             tabs.push({ title: "Create Assignment", icon: MdDashboard, children: <CreateAssignment cid={cid} user={user} setUser={setUser} data={{ course, setCourse }} setAlert={setAlert}/>, attributes: {} },)
             // tabs.push({ title: "Grade Students", icon: MdDashboard, children: <h1 className=''>Grade Students</h1>, attributes: {} })
-            tabs.push({ title: "Student Details", icon: MdDashboard, children: <h1 className=''>Student Details</h1>, attributes: {} })
+            tabs.push({ title: "Student Details", icon: MdDashboard, children: <TabStudentList cid={cid} user={user} setUser={setUser} data={{ course, setCourse }} setAlert={setAlert}/>, attributes: {} })
             tabs.push({ title: "Course Settings", icon: MdDashboard, children: <CourseUpdate cid={cid} user={user} setUser={setUser} data={{ course, setCourse }} setAlert={setAlert}/>, attributes: {} })
         }
     }

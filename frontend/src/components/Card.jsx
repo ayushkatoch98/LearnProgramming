@@ -14,7 +14,7 @@ export default function Cards(props) {
             </a>
             <div className="p-5">
                 <a href={props.url}>
-                    <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white break-all">{props.title}</h5>
+                    <h5 className="mb-2 truncate text-2xl font-bold tracking-tight text-gray-900 dark:text-white break-all">{props.title}</h5>
                 </a>
              
                 <Badge style={{ padding: "5px" }} className='col-span-2 mb-3'>

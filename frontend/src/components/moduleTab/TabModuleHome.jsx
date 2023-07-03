@@ -30,7 +30,8 @@ export default function ModuleHome(props) {
                 <main>
                     <div className="mx-automax-w-7xl py-6 px-1 sm:px-6 lg:px-8">
                         <div className='flex items-left flex-col'>
-                            <div className='grid grid-cols-3 gap-5'>
+                        
+                                <div className='border shadow border-solid w-full h-full p-5 flex-col gap-4'>
                                 {/* <h2 className='text-4xl mb-5 col-span-3'>{props.data.course.title}</h2> */}
                                 <span className='col-span-3'>
                                     {parse("" + props.data.course.description)}

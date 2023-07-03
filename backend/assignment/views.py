@@ -18,83 +18,28 @@ from useAuth.serializers import AssignmentSerializer, AssignmentCodeSerializer, 
 from useAuth.utility import generateData
 
 
+def getAssginments(request, cid, aid=None):
+    assignments = []
+        
+    if aid == None:
+        assignments = Assignment.objects.filter(course__id = cid, is_deleted=False) 
+    else:
+        assignments = Assignment.objects.filter(course__id = cid, id = aid, is_deleted=False)
+
+
+    return Response(generateData("", False, AssignmentSerializer(assignments, many=True).data), status=status.HTTP_200_OK)
+
+
 class AssignmentViewStudent(APIView):
 
     permission_classes = [permissions.IsAuthenticated, isStudent|isTeacher, isInCourse]
 
-
+    # get a particular course assignments 
     def get(self, request, cid, aid=None):
-        
-        assignments = []
-        
-        if aid == None:
-            assignments = Assignment.objects.filter(course__id = cid, is_deleted=False) 
-        else:
-            assignments = Assignment.objects.filter(course__id = cid, id = aid, is_deleted=False)
-
-        data = {
-            "submitted": "",
-            "data": [],
-        }
-
-        if aid != None:
-            profile = Profile.objects.get(user__id = request.user.id)
-            submission = AssignmentSubmission.objects.filter(student=profile, assignment=assignments.first()).first()
+        return getAssginments(request, cid, aid)
+ 
 
 
-        if aid == None:
-            return Response(generateData("", False, AssignmentSerializer(assignments, many=True).data), status=status.HTTP_200_OK)
-        
-        assignments = assignments.first()
-
-        data = AssignmentSerializer(assignments).data
-        data["submission"] = AssignmentSubmissionSerializer(submission).data
-        return Response(generateData("", False, data), status=status.HTTP_200_OK)
-    
-    
-    def post(self, request, cid, aid, rid = None):
-        # rid = remark id 
-     
-        profile = Profile.objects.get(user__id = request.user.id)
-        course = Course.objects.get(id = cid)
-
-    
-        assignment = Assignment.objects.filter(id = aid, is_deleted=False).first()
-        if assignment == None:
-            return Response(generateData("Couldnt find the assignment", True), status=status.HTTP_404_NOT_FOUND)
-
-        file = None
-        if "file" in request.FILES:
-            file = request.FILES["file"]
-
-    
-        if request.data["request_type"] == "report":
-            submission, created = AssignmentSubmission.objects.update_or_create(assignment=assignment, student = profile, defaults={
-                "file" : file,
-                "report_submitted" : True
-            })
-        elif request.data["request_type"] == "code":
-            submission, created = AssignmentSubmission.objects.update_or_create(assignment=assignment, student = profile, defaults={
-                "code" : request.data["code"],
-                "code_submitted" : True
-            })
-        
-        try:
-            remark = AssignmentRemark.objects.create(submission = submission, remark_by=course.owner, report_score = 0, compilation_score = 0, running_score = 10 , test_cases_score = 10 , final_cases_score = 0, is_final_remark = False)
-        except:
-            remark = AssignmentRemark.objects.filter(submission = submission, submission__assignment__id = aid).first()
-            remark.report_score = 0
-            remark.compilation_score = 10
-            remark.running_score = 10
-            remark.test_cases_score = 10
-            remark.final_cases_score = 0
-            remark.save()
-
-            print("ERROR when creating remark")
-
-        return Response(generateData("Assignment Submitted", False, AssignmentSubmissionSerializer(submission).data), status=status.HTTP_200_OK)
-
-    
 
 class AssignmentViewTeacher(APIView):
 
@@ -102,17 +47,7 @@ class AssignmentViewTeacher(APIView):
 
 
     def get(self, request, cid, aid=None):
-        
-        assignments = []
-        
-        if aid == None:
-            assignments = Assignment.objects.filter(course__id = cid, is_deleted=False) 
-        else:
-            assignments = Assignment.objects.filter(course__id = cid, id = aid, is_deleted=False)
-
-
-        return Response(generateData("", False, AssignmentSerializer(assignments, many=True).data), status=status.HTTP_200_OK)
-    
+        return getAssginments(request, cid, aid)
 
 
 

@@ -2,7 +2,7 @@ import { Fragment, useContext, useState, React, useEffect } from 'react'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import Navigation from '../../components/Navigation';
-import { Button, Label, TextInput } from 'flowbite-react';
+import { Button, Label, TextInput, Badge } from 'flowbite-react';
 import Alerts from '../../components/Alert';
 import axios from 'axios';
 import { API_URL, COURSE_URL } from '../../constant';
@@ -43,12 +43,12 @@ export default function AssignmentSubmit(props) {
 
 
     useEffect(() => {
-        console.log("User", user)
-        axios.get(buildURL(COURSE_URL.student.assignment.get.replace("@cid", cid).replace("@aid", aid), user), buildHeader(user)).then(res => {
+        
+        axios.get(buildURL(COURSE_URL.student.submission.get.replace("@cid", cid).replace("@aid", aid), user), buildHeader(user)).then(res => {
             
             const data = res.data.data;
-            const reportStatus = data.submission.report_submitted == true ? "Submitted" : "Not Submitted"
-            const codeStatus = data.submission.code_submitted == true ? "Submitted" : "Not Submitted"
+            const reportStatus = data.submission.report_submitted
+            const codeStatus = data.submission.code_submitted
             const finalStatus = reportStatus + "\n" + codeStatus
             console.log("Assignment Data", data)
 
@@ -85,7 +85,7 @@ export default function AssignmentSubmit(props) {
         console.log("sending", formObject)
         
 
-        axios.post(buildURL(COURSE_URL.student.assignment.url.replace("@cid", cid).replace("@aid", aid), user) , formObject, buildHeader(user)).then(res => {
+        axios.post(buildURL(COURSE_URL.student.submission.post.replace("@cid", cid).replace("@aid", aid), user) , formObject, buildHeader(user)).then(res => {
             console.log("res" , res)
             showAlert(setAlert, "success", res, "success");
             
@@ -113,7 +113,7 @@ export default function AssignmentSubmit(props) {
         console.log("sending", data)
         
 
-        axios.post(buildURL(COURSE_URL.student.assignment.url.replace("@cid", cid).replace("@aid", aid), user) , data, buildHeader(user)).then(res => {
+        axios.post(buildURL(COURSE_URL.student.submission.post.replace("@cid", cid).replace("@aid", aid), user) , data, buildHeader(user)).then(res => {
             console.log("res" , res)
             showAlert(setAlert, "success", res, "success");
         }).catch(err => {
@@ -124,8 +124,8 @@ export default function AssignmentSubmit(props) {
 
 
     const uploadAssignmentForm = [
-        {type: "text", disabled: true, colSpan: "col-span-1", value: submissionStatus.report, name: "nothing", label: "Report Status", required: true, placeholder: "Course name", id: "id"},
-        {type: "text", disabled: true, colSpan: "col-span-1", value: submissionStatus.code, name: "nothing", label: "Code Status", required: true, placeholder: "Course name", id: "id"},
+        // {type: "text", disabled: true, colSpan: "col-span-1", value: submissionStatus.report, name: "nothing", label: "Report Status", required: true, placeholder: "Course name", id: "id"},
+        // {type: "text", disabled: true, colSpan: "col-span-1", value: submissionStatus.code, name: "nothing", label: "Code Status", required: true, placeholder: "Course name", id: "id"},
         // {type: "hidden", name: "title", colSpan: "col-span-1", label: "Module Title", required: true, placeholder: "Module Title", id: "id" },
         {type: "file", name: "file", colSpan: "col-span-2", label: "Upload Report", required: true, placeholder: "placeholder", id: "id", accept:".pdf,.ppt,.pptx,.txt" },
         // {type: "editor", name: "description", colSpan: "col-span-2", label: "Course Description", placeholder: "Course description", id: "id", resize: true, value: editorValue, onChange: setEditorValue},
@@ -152,8 +152,14 @@ export default function AssignmentSubmit(props) {
                         <div className='gap-y-0'>
 
                         
-                        <FormGenerator heading="Upload Asssignment" inputs={uploadAssignmentForm} handleSubmit={handleReportSubmit} cols="m-2 grid-cols-4 col-span-4">
-
+                        <FormGenerator heading="Upload Asssignment" inputs={uploadAssignmentForm} handleSubmit={handleReportSubmit} cols="m-2 grid-cols-2 col-span-4">
+                            <Badge style={{padding: "6px"}} className='col-span-1' color={ submissionStatus.report ? "success" : "warning" }>
+                                Report {submissionStatus.report ? "submitted" : "not submitted" }
+                            </Badge>
+                            <Badge style={{padding: "6px"}} className='col-span-1' color={ submissionStatus.code ? "success" : "warning" }>
+                                Code {submissionStatus.code ? "submitted" : "not submitted" }
+                            </Badge>
+                        
                         </FormGenerator>
 
 

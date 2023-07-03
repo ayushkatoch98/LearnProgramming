@@ -43,6 +43,7 @@ export default function Login(props) {
                     email: res.data.email,
                     group: res.data.group,
                     token: res.data.token,
+                    image: res.data.image,
                     authenticated: true,
                 }
             )
@@ -76,19 +77,15 @@ export default function Login(props) {
 
             <div className="min-h-full">
 
-                <Navigation></Navigation>
-                <header className="bg-white shadow">
-                    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                        <h1 className="text-3xl font-bold tracking-tight text-gray-900">{props.header}</h1>
-                    </div>
-                </header>
+                <Navigation hide="true" header={props.header} ></Navigation>
+            
                 <Alerts hidden={alert.hidden} title={alert.title} description={alert.description} color={alert.color}></Alerts>
 
                 <main>
                     <div className="mx-automax-w-7xl py-6 px-1 sm:px-6 lg:px-8">
                         <div className='flex items-center flex-col'>
                             
-                        <FormGenerator inputs={inputs} handleSubmit={handleSubmit} width="w-2/6" cols=" grid-cols-1"></FormGenerator>
+                            <FormGenerator inputs={inputs} handleSubmit={handleSubmit} width="w-2/6" cols=" grid-cols-1"></FormGenerator>
                         </div>
                     </div>
                 </main>

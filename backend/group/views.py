@@ -14,7 +14,7 @@ from useAuth.serializers import ModuleGroupSerializer
 # Create your views here.
 
 class GroupView(APIView):
-    permission_classes = [permissions.IsAuthenticated, isTeacher, isCourseOwner]
+    permission_classes = [permissions.IsAuthenticated, isTeacher|isStudent, isCourseOwner|isStudent]
 
     def get(self, request, cid):
 

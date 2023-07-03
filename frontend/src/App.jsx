@@ -20,6 +20,8 @@ import AssignmentSubmit from './pages/assignment/AssignmentSubmit'
 import AssignmentSubmission from './pages/grade/AssignmentSubmission'
 import GradeAssignment from './pages/grade/GradeAssignment'
 import CourseUpdate from './components/moduleTab/CourseUpdate'
+import Profile from './pages/profile/Profile'
+import Logout from './pages/Logout'
 const user = {
     name: 'Tom Cook',
     email: 'tom@example.com',
@@ -56,6 +58,7 @@ export default function App() {
             email: cookies.email,
             group: cookies.group,
             token: cookies.token,
+            image: cookies.image,
             isLoggedIn: cookies.isLoggedIn,
         }
     )
@@ -74,6 +77,7 @@ export default function App() {
         setCookie("username", obj.username, { "path": "/" })
         setCookie("token", obj.token, { "path": "/" })
         setCookie("isLoggedIn", obj.isLoggedIn, { "path": "/" })
+        setCookie("image", obj.image, { "path": "/" })
 
     }
 
@@ -93,7 +97,7 @@ export default function App() {
                     <BrowserRouter>
                         <Routes>
                             <Route path="/" element={<CourseList header="Dashboard" />} />
-                            <Route path="/testing/" element={<Testing header="Dashboard" />} />
+                            <Route path="/testing/" element={<Testing header="Testing" />} />
                             <Route path="/auth/register/" element={<Registration header="Create a new account" />} />
                             <Route path="/auth/login/" element={<Login header="Welcome Back!" />} />
                             <Route path="/course/create/" element={<CourseCreate header="Start a new course" />} />
@@ -104,6 +108,8 @@ export default function App() {
                             <Route path='/course/:cid/assignment/:aid/grade/' element={<AssignmentSubmission header="Submission List" />}></Route>
                             <Route path='/course/:cid/submission/:aid/:sid/' element={<GradeAssignment header="Grade Assignment" />}></Route>
                             <Route path='/course/:cid/setting/' element={<CourseUpdate header="Course Settings" />}></Route>
+                            <Route path='/profile/' element={<Profile header="Course Settings" />}></Route>
+                            <Route path='/logout/' element={<Logout header="Course Settings" />}></Route>
                             
                             {/* <Route index element={<Home />} />
             <Route path="blogs" element={<Blogs />} />

@@ -1,14 +1,14 @@
-import { Accordion, ListGroup } from 'flowbite-react';
+import { Accordion, ListGroup, Badge } from 'flowbite-react';
 import { API_URL } from '../constant';
 import { HiCloudDownload, HiInbox, HiOutlineAdjustments, HiDocumentDownload, HiTrash, HiDownload, HiEye, HiCheck} from 'react-icons/hi';
 
 
-export default function DefaultAccordion(props) {
+export default function StudentList(props) {
 
     if (Object.keys(props.data).length <= 0){
         return (<div className=''> <h1>No items found</h1> </div>)
     }
-
+    
     var foundSomething = false;
     for (var key in props.data){
         if (props.data[key].length == 0){
@@ -34,7 +34,7 @@ export default function DefaultAccordion(props) {
 
                         <Accordion.Panel className='focus:outline-none' key={crypto.randomUUID()}>
                             <Accordion.Title className='focus:outline-none'>
-                                { props.header != undefined ? props.header : props.data[key][0].group.title}
+                                {props.header}
                             </Accordion.Title>
                             <Accordion.Content>
 
@@ -48,27 +48,36 @@ export default function DefaultAccordion(props) {
                                                 <li key={crypto.randomUUID()} className="p-4">
                                                     <div className="flex items-center">
                                                         
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="text-sm font-medium text-gray-900 truncate dark:text-white">
-                                                         
-                                                                {item.title}
-                                                            </p>
+                                                        <div className="inline-flex w-full">
+                                                            <img className="h-12 mr-4 object-cover w-12  rounded-full bg-gray-50" src={ API_URL + item.student.image} alt="" />
+                                                            
+                                                                <Badge className='' style={{padding: "6px"}}>
+                                                                    Student No.{item.student.user.id}
+                                                                </Badge>
+                                                            
+                                                                {item.student.user.first_name + " " + item.student.user.last_name} <br/>
+                                                                {item.student.user.email}
+                                                                
+                                                                
                                                        
                                                         </div>
-                                                        
+{/* 
+                                                        <div className="inline-flex w-full">
+                                
+                                                                {item.student.user.first_name + " " + item.student.user.last_name} <br />
+                                                                <Badge className='mx-2' style={{padding: "6px"}}>
+                                                                    ID {item.student.user.id}
+                                                                </Badge>
+                                                             
+                                                            
+
+                                                        </div>
+                                                         */}
                                                         <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
                                                             {
-                                                                props.onView != "none" ? <a className='px-3 cursor-pointer' href={`/course/${props.cid}/assignment/${item.id}/submit/`} ><HiEye size={20}></HiEye></a> : <></>
+                                                                props.onDelete != "none" && props.owner.id != item.student.user.id ? <a className='px-3 cursor-pointer' onClick={ () => props.onDelete(item.student.user.id)}><HiTrash size={20}></HiTrash></a> : <></>
                                                             }
-                                                            {
-                                                                props.onDelete != "none" ? <a className='px-3 cursor-pointer' onClick={ () => props.onDelete(item.id)}><HiTrash size={20}></HiTrash></a> : <></>
-                                                            }
-                                                            {
-                                                                props.onDownload != "none" ? <a className='px-3 cursor-pointer' download href={`${API_URL + item.file}`}><HiDownload size={20}></HiDownload></a> : <></>
-                                                            }
-                                                            {
-                                                                props.onGrade != "none" ? <a className='px-3 cursor-pointer' href={`/course/${props.cid}/assignment/${item.id}/grade/`}><HiCheck size={20}></HiCheck></a> : <></>
-                                                            }
+                                                     
                                                         </div>
                                                       
                                                       

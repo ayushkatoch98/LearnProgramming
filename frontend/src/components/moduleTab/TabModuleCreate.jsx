@@ -57,7 +57,7 @@ export default function CreateModule(props) {
         console.log("sending", formObject)
         console.log("HEADERS", buildHeader(user))
         
-        const url = buildURL(COURSE_URL.teacher.module.url.replace("@cid", props.cid), user);
+        const url = buildURL(COURSE_URL.teacher.module.post.replace("@cid", props.cid), user);
         
         axios.post(url, formObject, buildHeader(user)).then(res => {
             console.log("response", res)

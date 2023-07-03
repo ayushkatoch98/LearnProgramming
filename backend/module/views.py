@@ -15,14 +15,14 @@ from django.db import IntegrityError
 class ModuleViewStudent(APIView):
 
     permission_classes = [permissions.IsAuthenticated, isStudent, isInCourse]
-
+    # list of modules 
     def get(self, request, cid):
-
-        modules = Module.objects.filter(course__group__course__id = cid, is_deleted=False, group__is_deleted = False)
+        
+     
+        modules = Module.objects.filter(group__course__id = cid, is_deleted=False)
 
         if len(modules) == 0:
             return Response(generateData("", False, []), status=status.HTTP_200_OK)
-        
         return Response(generateData("", False, ModuleSerializer(modules, many=True).data), status=status.HTTP_200_OK)
     
 
