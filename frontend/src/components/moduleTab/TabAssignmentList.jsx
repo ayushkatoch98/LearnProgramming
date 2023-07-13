@@ -77,9 +77,9 @@ export default function AssignmentList(props) {
                 <main>
                     <div className="mx-automax-w-7xl py-6 px-1 sm:px-6 lg:px-8">
                         <div className='flex items-left flex-col'>
-                            <div className='border p-10 shadow border-solid w-full flex-col gap-4'>
+                            <div className='border p-4 sm:p-10 shadow border-solid w-full flex-col gap-4'>
 
-                                <DefaultAccordion header="Assignments" cid={cid} onDelete={handleDelete} onDownload="none" data={props.data.course.assignments}></DefaultAccordion>
+                                <DefaultAccordion user={user} onView='/course/@cid/assignment/@id/submit/'  showDeadline="true" header="Assignments" cid={cid} onDelete={handleDelete} onDownload="none" data={props.data.course.assignments}></DefaultAccordion>
                                 
                             </div> 
 

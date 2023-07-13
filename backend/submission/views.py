@@ -6,12 +6,78 @@ from rest_framework import status, viewsets
 from rest_framework.views import APIView
 from rest_framework import generics, permissions
 import hashlib
+from pyflakes import api
 import time
+import py_compile
+from py_compile import PyCompileError
 from useAuth.custom_permission import isTeacher, isStudent, isCourseOwner, isInCourse
 from useAuth.utility import generateData
 from useAuth.serializers import ModuleGroupSerializer, AssignmentSubmissionSerializer, AssignmentSerializer
+import subprocess
+import tempfile
+from subprocess import STDOUT, CalledProcessError
+from datetime import datetime
+import time
+import sys
+
+
 
 # Create your views here.
+
+class CodeRunner():
+
+    def run(code):
+
+        f = tempfile.NamedTemporaryFile("w", dir="media/temp_files/" , suffix=".py", delete=False)
+        f.write(code)
+        f.close()
+        
+        a = None
+
+        try:
+
+            scores = {
+                "compile": False,
+                "running": False,
+                "cases": False
+            }
+
+            try:
+                py_compile.compile(f.name, doraise=True)
+                scores["compile"] = True
+            except PyCompileError as err:
+                scores["compile"] = False
+                print("err", err)
+                return True, str(err), scores
+
+            a = subprocess.check_output(["python3", f.name], stderr=STDOUT, shell=False)
+            print("OUTPUT", a.decode())
+            # TODO: remove the tempfile 
+            # subprocess.run(["rm" , f.name])
+            scores["running"] = True
+            scores["cases"] = True
+        except CalledProcessError as err:
+            print("ERROR", err.output, err.returncode)
+            if err.returncode == 3:
+                # program ran successfully but test cases failed
+                scores["running"] = True
+                scores["cases"] = False    
+                return True, err.output, scores
+            
+            scores["running"] = False
+            scores["cases"] = False
+
+            
+            # error, and sending the error message 
+            return True, err.output, scores
+        
+        # no error, sending the output
+        return False, "\n" + a.decode(), scores
+        
+
+
+        
+
 
 
 class SubmissionViewStudent(APIView):
@@ -52,32 +118,89 @@ class SubmissionViewStudent(APIView):
         if "file" in request.FILES:
             file = request.FILES["file"]
 
+        deadline = assignment.deadline.timestamp()
+        today = datetime.now().timestamp()
+
+        deadlineMet = True
+        if today > deadline:
+            deadlineMet = False
+
     
         if request.data["request_type"] == "report":
             submission, created = AssignmentSubmission.objects.update_or_create(assignment=assignment, student = profile, defaults={
                 "file" : file,
-                "report_submitted" : True
+                "report_submitted" : True,
+                "deadline_met": deadlineMet
             })
         elif request.data["request_type"] == "code":
             submission, created = AssignmentSubmission.objects.update_or_create(assignment=assignment, student = profile, defaults={
                 "code" : request.data["code"],
-                "code_submitted" : True
+                "code_submitted" : True,
+                "deadline_met": deadlineMet
             })
         
+        scores = {
+            "compile" : 0,
+            "running" : 0,
+            "test_cases_score": 0,
+            "final_cases_score": 0
+        }
+        #TODO: RUN CODE RUNNER HERE 
+        ENTIRE_CODE = "NOTHING"
+        err = False
+        output = ""
+        if request.data["request_type"] == "code": 
+            ENTIRE_CODE = request.data["code"].strip() + "\n\n\n" + assignment.code.solution_code
+            print("ENTIRE CODE", ENTIRE_CODE)
+            err , output, scores = CodeRunner.run(ENTIRE_CODE)
+
+            print("SCORES" , scores)
+
+            if scores["compile"]:
+                scores["compile"] = assignment.code.compilation_score
+            else:
+                scores["compile"] = 0
+
+            if scores["running"]:
+                scores["running"] = assignment.code.running_score
+            else:
+                scores["running"] = 0
+
+            if scores["cases"]:
+                scores["test_cases_score"] = assignment.code.test_cases_score
+                scores["final_cases_score"] = assignment.code.final_cases_score
+            else:
+                scores["test_cases_score"] = 0
+                scores["final_cases_score"] = 0
+
+
         try:
-            remark = AssignmentRemark.objects.create(submission = submission, remark_by=course.owner, report_score = 0, compilation_score = 0, running_score = 10 , test_cases_score = 10 , final_cases_score = 0, is_final_remark = False)
+            remark = AssignmentRemark.objects.create(submission = submission, remark_by=course.owner, report_score = 0, 
+                                                    compilation_score = scores["compile"],
+                                                    running_score = scores["running"],
+                                                    test_cases_score = scores["test_cases_score"],
+                                                    final_cases_score = scores["final_cases_score"],
+                                                    is_final_remark = False)
         except:
             remark = AssignmentRemark.objects.filter(submission = submission, submission__assignment__id = aid).first()
-            remark.report_score = 0
-            remark.compilation_score = 10
-            remark.running_score = 10
-            remark.test_cases_score = 10
-            remark.final_cases_score = 0
+            if request.data["request_type"] == "report":
+                remark.report_score = 0
+            else:
+                remark.compilation_score = scores["compile"]
+                remark.running_score = scores["running"]
+                remark.test_cases_score = scores["test_cases_score"]
+                remark.final_cases_score = scores["final_cases_score"]
+
             remark.save()
-
-            print("ERROR when creating remark")
-
-        return Response(generateData("Assignment Submitted", False, AssignmentSubmissionSerializer(submission).data), status=status.HTTP_200_OK)
+            
+        data = {
+            "ENTIRE_CODE" : ENTIRE_CODE,
+            "codeError": err,
+            "codeOutput" : output,
+            "submission" : AssignmentSubmissionSerializer(submission).data,
+            "scores": scores
+        }
+        return Response(generateData("Assignment Submitted", False, data), status=status.HTTP_200_OK)
 
     
     

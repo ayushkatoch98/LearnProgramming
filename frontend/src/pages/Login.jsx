@@ -75,17 +75,17 @@ export default function Login(props) {
     return (
         <>
 
-            <div className="min-h-full">
+            <div className="h-full w-screen">
 
                 <Navigation hide="true" header={props.header} ></Navigation>
             
                 <Alerts hidden={alert.hidden} title={alert.title} description={alert.description} color={alert.color}></Alerts>
 
                 <main>
-                    <div className="mx-automax-w-7xl py-6 px-1 sm:px-6 lg:px-8">
+                    <div className="w-full py-6 px-3 sm:px-6 lg:px-8">
                         <div className='flex items-center flex-col'>
                             
-                            <FormGenerator inputs={inputs} handleSubmit={handleSubmit} width="w-2/6" cols=" grid-cols-1"></FormGenerator>
+                            <FormGenerator inputs={inputs} handleSubmit={handleSubmit} width="w-full sm:w-2/6" cols=" grid-cols-1"></FormGenerator>
                         </div>
                     </div>
                 </main>

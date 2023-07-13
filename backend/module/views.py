@@ -74,11 +74,17 @@ class ModuleViewTeacher(APIView):
         if module == None:
             return Response(generateData("Module not found", True), status=status.HTTP_404_NOT_FOUND)
         
+        group = ModuleGroup.objects.get(id = request.data["gid"])
+
         try:
+
+            if "file" in request.FILES and request.FILES["file"] != None:
+                module.file=request.FILES["file"]
+
+            module.group = group
             module.title = request.data["title"]
             module.is_published = is_published
-            module.file = request.FILES["file"]
-            module.type = request.data["module_type"]
+            # module.type = request.data["module_type"]
             module.save()
         except IntegrityError as err:
             return Response(generateData("Module with same name already exists", True), status=status.HTTP_404_NOT_FOUND)

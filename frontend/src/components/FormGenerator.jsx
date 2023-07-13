@@ -2,7 +2,7 @@ import { Fragment, useContext, useEffect, useState } from 'react'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import Navigation from '../components/Navigation';
-import { Button, Label, TextInput, FileInput, Select, Radio, Checkbox } from 'flowbite-react';
+import { Button, Label, TextInput, FileInput, Select, Radio, Checkbox, Textarea } from 'flowbite-react';
 import Alerts from '../components/Alert';
 import axios from 'axios';
 import { API_URL, COURSE_URL } from '../constant';
@@ -42,9 +42,18 @@ export default function FormGenerator(props) {
                 return (<TextInput {...attributes} />)
             }
             case "editor": {
-                return (<ReactQuill {...attributes} className='max-h-30 overflow-auto border border-solid disabled:cursor-not-allowed disabled:opacity-50 bg-gray-50 border-gray-300 text-gray-900 focus:border-cyan-500 focus:ring-cyan-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-cyan-500 dark:focus:ring-cyan-500 rounded-lg p-2.5 text-sm' theme="snow" />
+                var readOnly = false
+                if (attributes?.disabled == true){
+                    readOnly = true
+                }
+                return (<ReactQuill {...attributes} readOnly={readOnly} className='max-h-30 overflow-auto border border-solid disabled:cursor-not-allowed disabled:opacity-50 bg-gray-50 border-gray-300 text-gray-900 focus:border-cyan-500 focus:ring-cyan-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-cyan-500 dark:focus:ring-cyan-500 rounded-lg p-2.5 text-sm' theme="snow" />
                 )
             }
+
+            case 'textarea': {
+                return (<Textarea {...attributes}>  </Textarea>)
+            }
+
             case "file": {
                 return (<FileInput {...attributes} />
                 )
@@ -58,21 +67,20 @@ export default function FormGenerator(props) {
             }
             case "select": {
 
+                if (attributes.options == undefined || attributes.options.length == 0) {
+                    return <Select key={crypto.randomUUID()} {...attributes}></Select>
+                }
                 return (
                     <Select key={crypto.randomUUID()} {...attributes} >
+                        {/* <option key={crypto.randomUUID()} value={-1} selected disabled> -- Not Selected -- </option> */}
                         {
+
                             attributes.options.map(item => {
+
                                 return (
                                     <React.Fragment key={crypto.randomUUID()}>
                                         {
-                                            item.selected ?
-                                                item?.value == undefined ?
-                                                    <option key={crypto.randomUUID()} value={item.id} selected>{item.title}</option> :
-                                                    <option key={crypto.randomUUID()} value={item.id} selected>{item.value}</option>
-                                                :
-                                                item?.value == undefined ?
-                                                    <option key={crypto.randomUUID()} value={item.id}>{item.title}</option> :
-                                                    <option key={crypto.randomUUID()} value={item.id}>{item.value}</option>
+                                            <option key={crypto.randomUUID()} value={item.id}>{item.title}</option>
                                         }
                                     </React.Fragment>
                                 )
@@ -91,7 +99,7 @@ export default function FormGenerator(props) {
                             attributes.options.map(item => {
                                 return (
                                     <div key={crypto.randomUUID()} className=" border flex items-center gap-2  w-full  disabled:cursor-not-allowed disabled:opacity-50 bg-gray-50 border-gray-300 text-gray-900 focus:border-cyan-500 focus:ring-cyan-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-cyan-500 dark:focus:ring-cyan-500 rounded-lg p-2.5 text-sm">
-                                        <Radio value={item.value} {...attributes} />
+                                        <Radio {...item} {...attributes} />
                                         <Label>{item.value} </Label>
                                     </div>
                                 )
@@ -112,7 +120,7 @@ export default function FormGenerator(props) {
                             attributes.options.map(item => {
                                 return (
                                     <div key={crypto.randomUUID()} className=" border flex items-center gap-2  w-full  disabled:cursor-not-allowed disabled:opacity-50 bg-gray-50 border-gray-300 text-gray-900 focus:border-cyan-500 focus:ring-cyan-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-cyan-500 dark:focus:ring-cyan-500 rounded-lg p-2.5 text-sm">
-                                        <Checkbox value={item.value} {...attributes} />
+                                        <Checkbox {...item} {...attributes} />
                                         <Label>{item.value} </Label>
                                     </div>
                                 )
@@ -145,16 +153,24 @@ export default function FormGenerator(props) {
             }
 
             case "datetime": {
-                const DT = React.useMemo( () => <DateTimePicker {...attributes} />, [] );
+
                 return (
-                    // <div inline-datepicker="true" data-date="02/25/2022"></div>
-
                     <>
-                        {DT}
-                        </>
-
+                        <input {...attributes} name={attributes.name1} id={attributes.id1} className='border disabled:cursor-not-allowed disabled:opacity-50 bg-gray-50 border-gray-300 text-gray-900 focus:border-cyan-500 focus:ring-cyan-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-cyan-500 dark:focus:ring-cyan-500 rounded-lg p-2.5 text-sm' type='date'></input>
+                        <input {...attributes} name={attributes.name2} id={attributes.id2} className='border ml-2 disabled:cursor-not-allowed disabled:opacity-50 bg-gray-50 border-gray-300 text-gray-900 focus:border-cyan-500 focus:ring-cyan-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-cyan-500 dark:focus:ring-cyan-500 rounded-lg p-2.5 text-sm' type='time'></input>
+                    </>
                 )
             }
+
+            case "time": {
+
+                return (
+                    <>
+                        <input {...attributes} className='block border disabled:cursor-not-allowed disabled:opacity-50 bg-gray-50 border-gray-300 text-gray-900 focus:border-cyan-500 focus:ring-cyan-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-cyan-500 dark:focus:ring-cyan-500 rounded-lg p-2.5 text-sm' type='time'></input>
+                    </>
+                )
+            }
+
 
             case "code": {
                 return (
@@ -172,13 +188,34 @@ export default function FormGenerator(props) {
                     />
                 )
             }
+
+            case "codeEditor": {
+                return (
+                    <CodeEditor
+                        className={`border rounded border-solid shadow m-2 w-full ${attributes.colSpan}`}
+                        language="python"
+                        id={attributes.id}
+                        placeholder="Please enter JS code."
+                        value={attributes.value}
+                        data-color-mode="dark"
+                        padding={10}
+                        style={{
+                            fontSize: 12,
+                            overflow: "auto",
+                            backgroundColor: "#000000",
+                            fontFamily: 'ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace',
+                            color: "white"
+                        }}
+                    />
+                )
+            }
         }
 
     }
 
 
     return (
-        <form onSubmit={props.handleSubmit} className={`border p-10 shadow border-solid flex ${props.width} grid ${props.cols} flex-col gap-4`}>
+        <form onSubmit={props.handleSubmit} className={`border p-3 sm:p-10 shadow border-solid flex ${props.width} grid ${props.cols} flex-col gap-4`}>
             <h3 className="mb-2 mt-0 text-2xl font-medium leading-tight  col-span-full">
                 {props.heading}
             </h3>

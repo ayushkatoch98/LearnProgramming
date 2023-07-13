@@ -36,6 +36,10 @@ export default function AssignmentSubmit(props) {
     const navigator = useNavigate()
 
     const [assignmentData, setAssignmentData] = useState({})
+    const [output, setOutput] = useState({
+        error: false,
+        output: ""
+    })
     const [submissionStatus, setSubmissionStatus] = useState("");
     const [isLoading, setIsLoading] = useState(true)
     const {cid, aid} = useParams()
@@ -115,6 +119,25 @@ export default function AssignmentSubmit(props) {
 
         axios.post(buildURL(COURSE_URL.student.submission.post.replace("@cid", cid).replace("@aid", aid), user) , data, buildHeader(user)).then(res => {
             console.log("res" , res)
+            // assignmentData.submission.code = res.data.data.ENTIRE_CODE
+
+            // setAssignmentData(prev => {
+            //     return {
+            //         ...prev,
+            //         submission : {
+            //             ...prev.submission,
+            //             code : res.data.data.ENTIRE_CODE
+            //         }
+            //     }
+            // })
+
+            setOutput(prev => {
+                return {
+                    ...prev,
+                    error : res.data.data.codeError,
+                    output : res.data.data.codeOutput
+                }
+            })
             showAlert(setAlert, "success", res, "success");
         }).catch(err => {
             showAlert(setAlert, "Something went wrong", err, "failure");
@@ -165,13 +188,13 @@ export default function AssignmentSubmit(props) {
 
                         <div className={` p-2 border border-solid shadow m-2 ${assignmentData.has_code ? "" : "hidden"} `}>
 
-                            <button className='btn bg-failure' onClick={handleRun} type='button'>Run</button>
-                            <button className='btn bg-failure' onClick={handleTestRun} type='button'>Run Test</button>
-                            <button className='btn bg-failure' onClick={handleCodeSubmit} type='button'>Submit</button>
+                            {/* <button className='btn bg-failure' onClick={handleRun} type='button'>Run</button> */}
+                            {/* <button className='btn bg-failure' onClick={handleTestRun} type='button'>Run Test</button> */}
+                            <Button outline color="light" className='btn bg-failure' onClick={handleCodeSubmit} type='button'>Submit Code</Button>
 
                         </div>
                         
-                        <div className={` shadow border border-solid p-5  ${assignmentData.has_code ? "" : "hidden"}`} style={{
+                        <div className={` shadow border border-solid p-5 ${assignmentData.has_code ? "" : "hidden"}`} style={{
                             position: "relative",
                             overflow: "auto",
                             width: "40%",
@@ -182,10 +205,22 @@ export default function AssignmentSubmit(props) {
                         
                             <h1> {assignmentData.code.title} </h1>
                             
-                            { assignmentData.code.description == undefined ? "" : parse(assignmentData.code.description) }
+                            <p>{ assignmentData.code.description == undefined ? "" : parse(assignmentData.code.description) }</p>
                             
-                            <h3> Imports </h3>
-                            <code>{assignmentData.code.imports}</code>
+                            {
+                                output.output != "" ? 
+                                
+                                    <>
+                                        <h3> <b>Output</b> </h3>
+                                    
+                                        <Badge className='w-full' style={{padding: "6px"}} color={ output.error ? "failure" : "success" }>
+                                            <code>{parse(output.output)}</code>
+                                        </Badge>
+                                    </>
+                                :
+                                <></>
+                            }
+                            
                         
                         </div>
                         
@@ -195,7 +230,7 @@ export default function AssignmentSubmit(props) {
                                 language="python"
                                 id='userCode'
                                 placeholder="Please enter JS code."
-                                value={ assignmentData.submission.code == undefined || assignmentData.submission.code == "" ? assignmentData.code.student_code : assignmentData.submission.code}
+                                value={ assignmentData.submission.code == undefined || assignmentData.submission.code == "" ? "#do not change the import lines, this will break your code\n" + assignmentData.code.imports + "\n\n\n" + assignmentData.code.student_code : assignmentData.submission.code}
                                 data-color-mode="dark"
                                 padding={30}
                                 style={{

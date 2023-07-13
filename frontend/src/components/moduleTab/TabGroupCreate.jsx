@@ -121,16 +121,16 @@ export default function CreateModuleGroup(props) {
     // var titleV = titleValue.slice()
     
     const createGroupForm = [
-        {type: "text", name: "title", colSpan: "col-span-2", label: "Enter group title", required: true, placeholder: "Group name", id: "id" },
-        {type: "checkbox", name: "is_published", colSpan: "col-span-1", label: "Is Published", id: "checkbox22", options: [{value: "Is Published"}]},
-        {type: "submit", colSpan: "col-span-2", label: ""}
+        {type: "text", name: "title", colSpan: "col-span-2 sm:col-span-2", label: "Enter group title", required: true, placeholder: "Group name", id: "id" },
+        {type: "checkbox", name: "is_published", colSpan: "col-span-2 sm:col-span-1", label: "Is Published", id: "checkbox22", options: [{value: "Is Published", defaultChecked: true}]},
+        {type: "submit", colSpan: "col-span-2 sm:col-span-2", label: ""}
     ]
 
     const updateGroupForm = [
-        {type: "select", name: "gid", colSpan: "col-span-1", label: "Select group to update", placeholder: "Select something", id: "id1", options: props.data.course.moduleGroups },
-        {type: "text", name: "title", colSpan: "col-span-1", label: "Enter group title", required: true, placeholder: "Course name", id: "id2" },
-        {type: "checkbox", name: "is_published", colSpan: "col-span-1", label: "Is Published", id: "checkbox2", options: [{value: "Is Published"}]},
-        {type: "submit", colSpan: "col-span-2", label: ""}
+        {type: "select", name: "gid", colSpan: "col-span-2 sm:col-span-1", label: "Select group to update", placeholder: "Select something", id: "id1", options: props.data.course.moduleGroups },
+        {type: "text", name: "title", colSpan: "col-span-2 sm:col-span-1", label: "Enter group title", required: true, placeholder: "Course name", id: "id2" },
+        {type: "checkbox", name: "is_published", colSpan: "col-span-2 sm:col-span-1", label: "Is Published", id: "checkbox2", options: [{value: "Is Published", defaultChecked: true}]},
+        {type: "submit", colSpan: "col-span-2 sm:col-span-2", label: ""}
     ]
 
 
@@ -140,11 +140,11 @@ export default function CreateModuleGroup(props) {
                 <main className=''>
                     <div className="mx-automax-w-7xl py-6 px-1 sm:px-6 lg:px-8">
                         <div className='flex items-left flex-col'>
-                            <div className=' grid grid-cols-4 gap-5'>
-                                <FormGenerator heading="Create a new Group" inputs={createGroupForm} handleSubmit={handleGroupCreate} cols=" grid-cols-2 col-span-2">
+                            <div className=' p-4 grid grid-cols-4 gap-5'>
+                                <FormGenerator heading="Create a new Group" inputs={createGroupForm} handleSubmit={handleGroupCreate} cols="grid-cols-2 col-span-4 sm:col-span-2">
 
                                 </FormGenerator>
-                                <FormGenerator heading="Update an existing Group" inputs={updateGroupForm} handleSubmit={handleGroupUpdate} cols=" grid-cols-2 col-span-2">
+                                <FormGenerator heading="Update an existing Group" inputs={updateGroupForm} handleSubmit={handleGroupUpdate} cols=" grid-cols-2 col-span-4 sm:col-span-2">
 
                                 </FormGenerator>
                                   

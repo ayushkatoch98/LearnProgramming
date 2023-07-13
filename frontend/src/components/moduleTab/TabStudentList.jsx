@@ -21,58 +21,6 @@ import StudentList from '../StudentListAccord';
 
 
 
-const people = [
-    {
-        name: 'Leslie Alexander',
-        email: 'leslie.alexander@example.com',
-        role: 'Co-Founder / CEO',
-        imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-        id: 0,
-    },
-    {
-        name: 'Michael Foster',
-        email: 'michael.foster@example.com',
-        role: 'Co-Founder / CTO',
-        imageUrl:
-            'https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-        lastSeen: '3h ago',
-        lastSeenDateTime: '2023-01-23T13:23Z',
-    },
-    {
-        name: 'Dries Vincent',
-        email: 'dries.vincent@example.com',
-        role: 'Business Relations',
-        imageUrl:
-            'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-        lastSeen: null,
-    },
-    {
-        name: 'Lindsay Walton',
-        email: 'lindsay.walton@example.com',
-        role: 'Front-end Developer',
-        imageUrl:
-            'https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-        lastSeen: '3h ago',
-        lastSeenDateTime: '2023-01-23T13:23Z',
-    },
-    {
-        name: 'Courtney Henry',
-        email: 'courtney.henry@example.com',
-        role: 'Designer',
-        imageUrl:
-            'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-        lastSeen: '3h ago',
-        lastSeenDateTime: '2023-01-23T13:23Z',
-    },
-    {
-        name: 'Tom Cook',
-        email: 'tom.cook@example.com',
-        role: 'Director of Product',
-        imageUrl:
-            'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-        lastSeen: null,
-    },
-]
 
 export default function TabStudentList(props) {
 
@@ -93,6 +41,7 @@ export default function TabStudentList(props) {
 
         axios.get(buildURL(COURSE_URL.teacher.courseDetail.get.replace("@cid", cid), user), buildHeader(user)).then(res => {
             
+            console.log("Student List", res.data.data)
             setStudents(prev => {
                 return {
                     "data": res.data.data
@@ -107,7 +56,38 @@ export default function TabStudentList(props) {
         })
     }, []);
 
+    function onRequestAccept(uid, isAccepted){
 
+        const url = buildURL(COURSE_URL.teacher.courseDetail.post.replace("@cid", props.cid), user)
+
+        axios.post(url, {request_accepted: isAccepted, uid: uid}, buildHeader(user)).then(res => {
+            console.log("res accepted" , res)
+            showAlert(setAlert, "Success", res, "success")
+
+            // const newStudnetsData = {
+            //     data : []
+            // }
+            // const leftUserID = res.data.data.student.user.id
+
+            // for (var i = 0; i < students.data.length; i ++){
+            //     if (students.data[i].student.user.id != leftUserID){
+                    
+            //         newStudnetsData.data.push(students.data[i])
+            //     }
+            // }
+
+            // setStudents(prev => {
+            //     return {
+            //         ...prev,
+            //         newStudnetsData
+            //     }
+            // })
+        }).catch(err => {
+            console.log("ERR" , err)
+            showAlert(setAlert, "Error", err, "failure")
+        })
+
+    }
 
     function handleDelete(uid) {
 
@@ -123,24 +103,24 @@ export default function TabStudentList(props) {
             console.log("Response Del", res)
             showAlert(setAlert, "Deleted", res, "success");
 
-            const newStudnetsData = {
-                data : []
-            }
-            const leftUserID = res.data.data.student.user.id
+            // const newStudnetsData = {
+            //     data : []
+            // }
+            // const leftUserID = res.data.data.student.user.id
 
-            for (var i = 0; i < students.data.length; i ++){
-                if (students.data[i].student.user.id != leftUserID){
+            // for (var i = 0; i < students.data.length; i ++){
+            //     if (students.data[i].student.user.id != leftUserID){
                     
-                    newStudnetsData.data.push(students.data[i])
-                }
-            }
+            //         newStudnetsData.data.push(students.data[i])
+            //     }
+            // }
 
-            setStudents(prev => {
-                return {
-                    ...prev,
-                    newStudnetsData
-                }
-            })
+            // setStudents(prev => {
+            //     return {
+            //         ...prev,
+            //         newStudnetsData
+            //     }
+            // })
 
         }).catch(err => {
             console.log("Response Del", err)
@@ -167,7 +147,7 @@ export default function TabStudentList(props) {
 
                     {
                         students.data.length == 0 ? <><h1 className='p-5'>No students</h1></> : 
-                        <StudentList header="Student Details" owner={user} showImage={true} cid={cid} onDelete={handleDelete} onDownload="none" data={students}/>
+                        <StudentList header="Student Details" onRequestAccept={onRequestAccept} owner={user} showImage={true} cid={cid} onDelete={handleDelete} onDownload="none" data={students}/>
                     }
             
                     </div>

@@ -22,6 +22,7 @@ import GradeAssignment from './pages/grade/GradeAssignment'
 import CourseUpdate from './components/moduleTab/CourseUpdate'
 import Profile from './pages/profile/Profile'
 import Logout from './pages/Logout'
+import StudentGradeView from './pages/grade/StudentGradeView'
 const user = {
     name: 'Tom Cook',
     email: 'tom@example.com',
@@ -97,19 +98,29 @@ export default function App() {
                     <BrowserRouter>
                         <Routes>
                             <Route path="/" element={<CourseList header="Dashboard" />} />
-                            <Route path="/testing/" element={<Testing header="Testing" />} />
                             <Route path="/auth/register/" element={<Registration header="Create a new account" />} />
                             <Route path="/auth/login/" element={<Login header="Welcome Back!" />} />
+                            
+                            <Route path='/profile/' element={<Profile header="Profile Settings" />}></Route>
+                            <Route path='/logout/' element={<Logout header="Course Settings" />}></Route>
+                            
+                            <Route path="/testing/" element={<Testing header="Testing" />} />
+
                             <Route path="/course/create/" element={<CourseCreate header="Start a new course" />} />
                             <Route path="/course/update/:cid/" element={<CourseCreate header="Update your course" update='true' />} />
+                            
                             <Route path="/course/join/" element={<CourseJoin header="Join a new course" />} />
                             <Route path="/course/:cid/" element={<ModuleTabs header="Module" />} />
+                            
                             <Route path='/course/:cid/assignment/:aid/submit/' element={<AssignmentSubmit header="Submit Assignment" />}></Route>
                             <Route path='/course/:cid/assignment/:aid/grade/' element={<AssignmentSubmission header="Submission List" />}></Route>
+                            
                             <Route path='/course/:cid/submission/:aid/:sid/' element={<GradeAssignment header="Grade Assignment" />}></Route>
+                            <Route path='/course/:cid/grade/:aid/' element={<StudentGradeView header="Assignment Remarks" />}></Route>
+                            
                             <Route path='/course/:cid/setting/' element={<CourseUpdate header="Course Settings" />}></Route>
-                            <Route path='/profile/' element={<Profile header="Course Settings" />}></Route>
-                            <Route path='/logout/' element={<Logout header="Course Settings" />}></Route>
+                            
+
                             
                             {/* <Route index element={<Home />} />
             <Route path="blogs" element={<Blogs />} />

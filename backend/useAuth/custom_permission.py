@@ -15,8 +15,8 @@ class isInCourse(permissions.BasePermission):
 
     def has_permission(self, request, view):
         cid = view.kwargs.get('cid', None)
-        a = CourseDetail.objects.filter(student__user = request.user, course__id = cid).first()
-
+        a = CourseDetail.objects.filter(student__user = request.user, course__id = cid, has_left=False, request_accepted=True).first()
+        
         return a != None
     
 class isTeacher(permissions.BasePermission):

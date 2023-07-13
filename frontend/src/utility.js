@@ -38,6 +38,7 @@ function showAlert(setAlert, title, description, color){
             }    
         
         }
+     
         else if (description.response != undefined){
 
             newDescription = description.response?.data.message
@@ -48,13 +49,17 @@ function showAlert(setAlert, title, description, color){
                 newDescription = description.response?.data?.message
             }
             if (newDescription == undefined){
+                newDescription = description.response?.data?.detail
+            }
+            if (newDescription == undefined){
                 newDescription = "response message is fucked dude";
             }
         }
-           
-        else{
-            newDescription = description.message
+
+        else if (description?.message != undefined){
+            newDescription = description.message;
         }
+           
 
     }
     setAlert( prev => (
@@ -66,7 +71,7 @@ function showAlert(setAlert, title, description, color){
             color: color 
         }
     ))
-    hideAlert(setAlert)
+    // hideAlert(setAlert)
 }
 
 function str_replace(find, replace, str){
@@ -103,5 +108,6 @@ function deleteResource(url, setAlert){
         console.log("Deletion Error", err)
     })
 }
+
 
 export {hideAlert, showAlert, buildURL, buildHeader}

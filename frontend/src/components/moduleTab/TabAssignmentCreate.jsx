@@ -10,25 +10,104 @@ import { buildHeader, buildURL, hideAlert, showAlert } from '../../utility';
 import { useNavigate, useParams } from 'react-router-dom';
 import AppContext from '../AppContext';
 import ReactQuill from 'react-quill';
+import CodeEditor from '@uiw/react-textarea-code-editor';
 import 'react-quill/dist/quill.snow.css';
 import FormGenerator from '../FormGenerator';
 // import { Button, Label, } from 'flowbite-react';
-
+import { $ } from 'react-jquery-plugin';
 
 export default function CreateAssignment(props) {
 
     const setAlert = props.setAlert
     const user = props.user
     const setUser = props.setUser
+    const sampleImport = `
+# dont remove sys import 
+import sys
+# add your imports below this line
+    `
+    const sampleCode = `
+# example program to find sum of two numbers
+def solution(n1, n2):
+    return n1 + n2
 
+# each element of the CASES is a sparate test case
+# eacher element of the nested list is the 
+# argument for the function
+CASES = [ [10, 20] , [30,40], [50,60] ]
+
+# each element is the solution / expected output
+# for the above CASES
+# CASES_OUTPUT = [ 30, 70, 110 ]
+
+
+# this function returns 2 values 
+# test_passed | False if any of the test was failed otherwise True
+# message | This could be error / success message 
+def main():
+    for i in range(0, len(CASES)):
+        # if you dont want  to write your own solution code then you can simply do 
+        # if student_output == CASES_OUTPUT[i]
+        expected_output = solution(CASES[i][0], CASES[i][1])
+        student_output = user_function_defined_above(CASES[i][0] , CASES[i][1])
+
+        if (expected_output != student_output):
+            # you can also output to console using print()
+            # to give students more idea where there code failed
+            # example, print('failed for the test case', CASES[i])
+            return False, "failed for test " + str(CASES[i])
+
+    return True, "Good Work!!"
+
+# make sure to call the main function 
+test_passed, message = main()
+
+# print the message to the user for 
+# additional information
+# about the execution
+print(message)
+
+# if test ever gets failed, always exit
+# with the code 3
+if not test_passed:
+    sys.exit(3)
+
+`
+
+    const [selectedItem , setSelectedItem] = useState(74);
     const [DT, setDatetime] = useState(new Date());
     const [codeFormVisibility, setCodeFormVisibility] = useState(false);
-    const codeProblem = createRef('');
-    const codeSyntax = createRef('//Enter your code below');
-    const codeFunctionDef = createRef('//Enter your code below');
+    const [updateFormData, setUpdateFormData] = useState({
+        title: "",
+        is_published: true,
+        has_code: false,
+        code_compilation_score: 0,
+        code_running_score: 0,
+        code_test_cases_score: 0,
+        code_final_cases_score: 0,
+        code: {
+            title: "",
+            description: "",
+            compilation_score: 0,
+            running_score: 0,
+            test_cases_score: 0,
+            final_cases_score: 0,
+        }
+    
+    })
+    const codeDescription = createRef('');
+    const codeImports = createRef('//Enter your code below');
+    const codeUserCode = createRef('//Enter your code dsfdsfsdf');
     const datetimeRef = createRef('//Enter your code below');
     const codeSolution = createRef('//Enter your code below');
     const fromVisi = createRef(true);
+    const uCodeDescription = createRef('');
+    const uCodeImports = createRef('//Enter your code below');
+    const uCodeUserCode = createRef('//Enter your code dsfdsfsdf');
+    const uDatetimeRef = createRef('//Enter your code below');
+    const uCodeSolution = createRef('//Enter your code below');
+    const uFromVisi = createRef(true);
+    const uSelectInputRef = createRef("IDK")
     // const [reload, setReload] = useState(true)
     
     
@@ -47,47 +126,58 @@ export default function CreateAssignment(props) {
     function handleSubmit(e){
         e.preventDefault();
 
-        // console.log("HMMMMM", codeProblem.current.value, codeFunctionDef.current.value, codeSolution.current.value, codeSyntax.current.value)
         var data = new FormData(e.target);
-        const cProblem = codeProblem.current.value;
-        const cFuncDef = codeFunctionDef.current.value;
-        const cSol = codeSolution.current.value;
-        const cSyn = codeSyntax.current.value;
+        const cDescription = codeDescription.current.value;
+        
+        const cUserCode = $("#student_code").val() // codeUserCode.current.value;
+        const cSolution = $("#solution_code").val() // codeSolution.current.value;
+        const cImports = $("#imports_code").val() // codeImports.current.value;
+
+        console.log("DATE TIME", e.target.date.value , e.target.time.value)
 
         let formObject = Object.fromEntries(data.entries());
         
         console.log(e.target.checkbox9.checked);
-        if (e.target.checkbox9.checked == true && (cProblem == "" || cFuncDef == "" || cSol == "" || cSyn == "")){
+        if (e.target.checkbox9.checked == true && (cDescription == "" || cUserCode == "" || cSolution == "" || cImports == "")){
             showAlert(setAlert, "Error", "All Fields are mandatory because its a coding assignment", "failure");
             return;
         }
-        else{
-            formObject.code_compilation_score = 0
-            formObject.code_running_score = 0
-            formObject.code_test_cases_score = 0
-            formObject.code_final_cases_score = 0
-        }
 
-    
+
+        formObject.code_compilation_score = parseInt(formObject.code_compilation_score)
+        formObject.code_running_score = parseInt(formObject.code_running_score)
+        formObject.code_test_cases_score = parseInt(formObject.code_test_cases_score)
+        formObject.code_final_cases_score = parseInt(formObject.code_final_cases_score)
+        formObject.date = e.target.date.value
+        formObject.time = e.target.time.value
         formObject.is_published = e.target.checkbox10.checked;
         formObject.assignment_type = e.target.checkbox9.checked == true ? "BOTH" : "REPORT"
         formObject.has_code = e.target.checkbox9.checked
-        formObject.code_description = codeProblem.current.value
-        // formObject["description"] = codeProblem.current.value
-        
-        
-        
+        formObject.code_description = codeDescription.current.value
+        // formObject.user_code = cUserCode
+        // formObject.code = cSolution
+        // formObject.imports_code = cImports
+
+        formObject.imports_code = $("#imports_code").val()
+        formObject.student_code = $("#student_code").val()
+        formObject.solution_code = $("#solution_code").val()
         
         console.log("sending", formObject)
         console.log("HEADERS", buildHeader(user))
         
         var url = buildURL(COURSE_URL.teacher.assignment.post.replace("@cid", props.cid), user);
-   
+        console.log("URL");
+    
         axios.post(url, formObject, buildHeader(user)).then(res => {
             console.log("response", res)
             showAlert(setAlert, "Success", res.data.message, "success")
 
             var newAssignments = []
+    
+
+            if (props.data.course.assignments?.Assignments == undefined){
+                props.data.course.assignments["Assignments"] = []
+            }
 
             for (var i = 0; i < props.data.course.assignments.Assignments.length; i++){
                 newAssignments.push(props.data.course.assignments.Assignments[i])
@@ -112,60 +202,170 @@ export default function CreateAssignment(props) {
     }
 
 
+
+    function handleUpdate(e){
+        e.preventDefault();
+
+        var data = new FormData(e.target);
+        const cDescription = uCodeDescription.current.value;
+        const cUserCode = $("#ustudent_code").val() // uCodeUserCode.current.value;
+        const cSolution = $("#usolution_code").val() // uCodeSolution.current.value;
+        const cImports = $("#uimports_code").val() // uCodeImports.current.value;
+
+        console.log("DATE TIME", e.target.date.value , e.target.time.value)
+
+        let formObject = Object.fromEntries(data.entries());
+        console.log("DEFAUKT FORM OBJECt", formObject)
+        
+        console.log(e.target.checkbox9.checked);
+        if (e.target.checkbox9.checked == true && (cDescription == "" || cUserCode == "" || cSolution == "" || cImports == "")){
+            showAlert(setAlert, "Error", "All Fields are mandatory because its a coding assignment", "failure");
+            return;
+        }
+        
+        formObject.aid = parseInt(formObject.aid)
+        formObject.code_compilation_score = parseInt(formObject.code_compilation_score)
+        formObject.code_running_score = parseInt(formObject.code_running_score)
+        formObject.code_test_cases_score = parseInt(formObject.code_test_cases_score)
+        formObject.code_final_cases_score = parseInt(formObject.code_final_cases_score)
+        formObject.date = e.target.date.value
+        formObject.time = e.target.time.value
+        formObject.is_published = e.target.checkbox10.checked;
+        formObject.assignment_type = e.target.checkbox9.checked == true ? "BOTH" : "REPORT"
+        formObject.has_code = e.target.checkbox9.checked
+        formObject.code_description = cDescription
+        // formObject.user_code = cUserCode
+        // formObject.code = cSolution
+        // formObject.imports_code = cImports
+
+        formObject.imports_code = $("#uimports_code").val()
+        formObject.student_code = $("#ustudent_code").val()
+        formObject.solution_code = $("#usolution_code").val()
+        
+        console.log("sending", formObject)
+        console.log("HEADERS", buildHeader(user))
+        
+        var url = buildURL(COURSE_URL.teacher.assignment.post.replace("@cid", props.cid), user);
+        console.log("URL");
+    
+        axios.put(url, formObject, buildHeader(user)).then(res => {
+            console.log("response", res)
+            showAlert(setAlert, "Success", res.data.message, "success")
+
+            var newAssignments = []
+        
+            for (var i = 0; i < props.data.course.assignments.Assignments.length; i++){
+                if (props.data.course.assignments.Assignments[i].id == formObject.aid){
+                    // updating
+                    newAssignments.push(res.data.data)
+                }
+                else newAssignments.push(props.data.course.assignments.Assignments[i])
+            }
+
+            props.data.setCourse(prev => {
+                return {
+                    ...prev,
+                    "assignments" : {
+                        "Assignments": newAssignments
+                    }
+                }
+            })
+        }).catch(err => {
+            console.log("error", err)
+            showAlert(setAlert, "Error", err, "failure")
+        })
+        
+    }
+
+
     function toggleCodeView(e){
 
         if (e.target.checked) {
             // make visible
+            if ($(".codingForm").hasClass("hidden"))
+                $(".codingForm").removeClass("hidden")
         }   
         else{
             // make invisible 
+            if (!$(".codingForm").hasClass("hidden"))
+                $(".codingForm").addClass("hidden")
         }
 
     }
 
 
 
-    // mandatory attributes 
-    // colSpan, label, name, type
-    // var titleV = titleValue.slice()
 
+    function onAssignmentSelect(e){
+        console.log("CALLED", e.target.value);
+        var selectedAssignment = {}
+        for (var i = 0; i < props.data.course.assignments.Assignments.length; i ++){
+            if (props.data.course.assignments.Assignments[i].id == e.target.value){
+                selectedAssignment = props.data.course.assignments.Assignments[i]
+                break
+            }
+        }
+        console.log("SELECTED ASSIGNMENT", selectedAssignment)
+        setUpdateFormData(prev => {
+            return {
+                ...prev,
+                ...selectedAssignment
+            }
+        })
+        
+        setSelectedItem(e.target.value)
+        return e.target
 
+    }
     const createAssignmentForm = [
-        // {type: "text", disabled: true, value: tokenValue, name: "nothing", colSpan: "col-span-2", label: "Invite Token", required: true, placeholder: "Course name", id: "id"},
-        // {type: "select", name: "gid", colSpan: "col-span-2", label: "Select group", placeholder: "Select something", id: "id", options: [{id : 1, value: "Group 1", selected: true},{id : 2, value: "Group 2", selected: false},{id : 3, value: "Group 3", selected: false},{id : 4, value: "Group 4", selected: false} ] },
-        {type: "text", name: "title", colSpan: "col-span-2", label: "Module Title", required: true, placeholder: "Module Title", id: "id" },
-        {type: "file", name: "file", colSpan: "col-span-2", label: "Upload Module", required: true, placeholder: "placeholder", id: "id", accept:".pdf,.ppt,.pptx,.txt" },
-        {type: "checkbox", name: "is_published", colSpan: "col-span-1", label: "Publish", placeholder: "placeholder", id: "checkbox10", cols: "grid-cols-1", options: [{value: "Publish", defaultChecked: true}] },
-        {type: "checkbox", name: "has_code", colSpan: "col-span-1", label: "Is Coding", placeholder: "placeholder", id: "checkbox9", cols: "grid-cols-1", onChange: toggleCodeView,  ref: fromVisi, options: [{value: "Is coding", defaultChecked:{codeFormVisibility}}] },
-        {type: "datetime", name: "deadline", colSpan: "col-span-2", label: "Assignment Deadline", required: true, placeholder: "Assignment Deadline", id: "id", onChange: setDatetime, value: DT },
+        {type: "hidden", name: "update", id: "update", value: "false"},
+        {type: "text", name: "title", colSpan: "col-span-4 sm:col-span-2", label: "Module Title", required: true, placeholder: "Module Title", id: "id" },
+        {type: "file", name: "file", colSpan: "col-span-4 sm:col-span-2", label: "Upload Module", required: true, placeholder: "placeholder", id: "id", accept:".pdf,.ppt,.pptx,.txt" },
+        {type: "checkbox", name: "is_published", colSpan: "col-span-4 sm:col-span-1", label: "Publish", placeholder: "placeholder", id: "checkbox10", cols: "grid-cols-1", options: [{value: "Publish", defaultChecked: true}] },
+        {type: "checkbox", name: "has_code", colSpan: "col-span-4 sm:col-span-1", label: "Is Coding", placeholder: "placeholder", id: "checkbox9", cols: "grid-cols-1", onChange: toggleCodeView,  ref: fromVisi, options: [{value: "Is coding", defaultChecked:"true"}] },
+        {type: "datetime", name1: "deadlineDate", name2: "deadlineTime", colSpan: "col-span-4 sm:col-span-2", label: "Assignment Deadline Date", required: true, placeholder: "Assignment Deadline", id1: "date", id2: "time"},
+     
+        {type: "hr", colSpan: "col-span-4 codingForm col-span-4"},
+        {type: "heading", colSpan: "col-span-4 codingForm col-span-4 ", value: "Design Coding Problem"},
         
+        {type: "number", defaultValue: 0, name: "code_compilation_score", colSpan: "col-span-4 codingForm sm:col-span-1", label: "compilation score", placeholder: "compilation_score", id: "id" },
+        {type: "number", defaultValue: 0, name: "code_running_score", colSpan: "col-span-4 codingForm sm:col-span-1", label: "running score", placeholder: "running_score", id: "id" },
+        {type: "number", defaultValue: 0, name: "code_test_cases_score", colSpan: "col-span-4 codingForm sm:col-span-2", label: "test cases score", placeholder: "test_cases_score", id: "id" },
+        {type: "hidden", defaultValue: 0, name: "code_final_cases_score", colSpan: "col-span-4 codingForm sm:col-span-2", label: "final cases score", placeholder: "final_cases_score", id: "id" },
 
-        // {type: "number", name: "code_compilation_score", colSpan: "col-span-2", label: "presentation", placeholder: "compilation_score", id: "id" },
-        // {type: "number", name: "code_running_score", colSpan: "col-span-2", label: "report", placeholder: "running_score", id: "id" },
-        // {type: "number", name: "code_test_cases_score", colSpan: "col-span-2", label: "references", placeholder: "test_cases_score", id: "id" },
-        // {type: "number", name: "code_final_cases_score", colSpan: "col-span-2", label: "something", placeholder: "final_cases_score", id: "id" },
-
-        {type: "hr", colSpan: "col-span-4"},
-        {type: "heading", colSpan: "col-span-4 ", value: "Design Coding Problem"},
-        
-        {type: "number", name: "code_compilation_score", colSpan: "col-span-1", label: "compilation score", placeholder: "compilation_score", id: "id" },
-        {type: "number", name: "code_running_score", colSpan: "col-span-1", label: "running score", placeholder: "running_score", id: "id" },
-        {type: "number", name: "code_test_cases_score", colSpan: "col-span-1", label: "test cases score", placeholder: "test_cases_score", id: "id" },
-        {type: "number", name: "code_final_cases_score", colSpan: "col-span-1", label: "final cases score", placeholder: "final_cases_score", id: "id" },
-
-        {type: "text", name: "code_title", colSpan: "col-span-4", label: "Code Title", placeholder: "Code Title", id: "id" },
-        {type: "editor", name: "description", colSpan: "col-span-2", label: "Problem Statement", placeholder: "Problem Statement", id: "id", resize: "true", ref: codeProblem},
-        {type: "code", name: "imports_code", colSpan: "col-span-2", label: "Import Libraries", placeholder: "// Import Libraries here below this line", id: "id", resize: "true", ref: codeSyntax},
-        {type: "code", name: "student_code", colSpan: "col-span-2", label: "Function difinition for students", placeholder: "// Give function definition for solution", id: "id", resize: "true", ref: codeFunctionDef},
-        {type: "code", name: "solution_code", colSpan: "col-span-2", label: "Write your solution and test cases", placeholder: "// Import Libraries here below this line", id: "id", resize: "true", ref: codeSolution},
-        {type: "submit", colSpan: "col-span-2"}
+        {type: "text", name: "code_title", colSpan: "col-span-4 codingForm sm:col-span-4", label: "Code Title", placeholder: "Code Title", id: "id" },
+        {type: "editor", name: "description", colSpan: "col-span-4 codingForm sm:col-span-4", label: "Problem Statement", placeholder: "Problem Statement", id: "id", resize: "true", ref: codeDescription},
+        {type: "codeEditor", value: sampleImport, name: "sampleImport", colSpan: "col-span-4 codingForm sm:col-span-4", label: "Import Libraries", placeholder: "// Import Libraries here below this line", id: "imports_code", resize: "true"},
+        {type: "codeEditor", name: "student_code", colSpan: "col-span-4 codingForm sm:col-span-4", label: "Function difinition for students", placeholder: "// Give function definition for solution", id: "student_code", resize: "true"},
+        {type: "codeEditor", value: sampleCode, name: "solution_code", colSpan: "col-span-4 codingForm sm:col-span-4", label: "Write your solution and test cases", placeholder: "// Import Libraries here below this line", id: "solution_code", resize: "true"},
+        {type: "submit", colSpan: "col-span-4 sm:col-span-2"}
     ]
 
-    const codingForm = [
-        {type: "editor", name: "description", colSpan: "col-span-4", label: "Problem Statement", placeholder: "Problem Statement", id: "id", resize: "true", ref: codeProblem},
-        {type: "code", name: "description", colSpan: "col-span-4", label: "Import Libraries", placeholder: "// Import Libraries here below this line", id: "id", resize: "true", ref: codeSyntax},
-        {type: "code", name: "description", colSpan: "col-span-4", label: "Function difinition for students", placeholder: "// Give function definition for solution", id: "id", resize: "true", ref: codeFunctionDef},
-        {type: "code", name: "description", colSpan: "col-span-4", label: "Write your solution and test cases", placeholder: "// Import Libraries here below this line", id: "id", resize: "true", ref: codeSolution},
+    const updateAssignmentForm = [
+        {type: "hidden", name: "update", id: "update", value: "true"},
+        // {type: "select", name: "aid", colSpan: "col-span-1", label: "Select group to update", placeholder: "Select something", id: "id1", onChange: onAssignmentSelect, options: props.data.course.assignments.Assignments },
+        {type: "select", name: "aid", colSpan: "col-span-4 sm:col-span-4", label: "Select Assignment to update", required: true, placeholder: "Module Title", id: "aiddsfsdf", value: selectedItem, ref: uSelectInputRef, onChange: onAssignmentSelect, options: props.data.course.assignments.Assignments },
+        {type: "text", defaultValue: updateFormData.title, name: "title", colSpan: "col-span-4 sm:col-span-2", label: "Module Title", required: true, placeholder: "Module Title", id: "id" },
+        {type: "file", name: "file", colSpan: "col-span-4 sm:col-span-2", label: "Upload Module", placeholder: "placeholder", id: "id", accept:".pdf,.ppt,.pptx,.txt" },
+        {type: "checkbox", name: "is_published", colSpan: "col-span-4 sm:col-span-1", label: "Publish", placeholder: "placeholder", id: "checkbox10", cols: "grid-cols-1", options: [{value: "Publish", defaultChecked: updateFormData.is_published}] },
+        {type: "checkbox", name: "has_code", colSpan: "col-span-4 sm:col-span-1", label: "Is Coding", placeholder: "placeholder", id: "checkbox9", cols: "grid-cols-1", onChange: toggleCodeView,  ref: uFromVisi, options: [{value: "Is coding", defaultChecked: updateFormData.has_code}] },
+        {type: "datetime", name1: "deadlineDate", name2: "deadlineTime", colSpan: "col-span-4 sm:col-span-2", label: "Assignment Deadline Date", required: true, placeholder: "Assignment Deadline", id1: "date", id2: "time"},
+
+        {type: "hr", colSpan: "codingForm col-span-4"},
+        {type: "heading", colSpan: "codingForm col-span-4 ", value: "Design Coding Problem"},
+        
+        {type: "number", defaultValue: updateFormData.code.compilation_score, name: "code_compilation_score", colSpan: "col-span-4 codingForm sm:col-span-1", label: "compilation score", placeholder: "compilation_score", id: "id" },
+        {type: "number", defaultValue: updateFormData.code.running_score, name: "code_running_score", colSpan: "col-span-4 codingForm sm:col-span-1", label: "running score", placeholder: "running_score", id: "id" },
+        {type: "number", defaultValue: updateFormData.code.test_cases_score, name: "code_test_cases_score", colSpan: "col-span-4 codingForm sm:col-span-2", label: "test cases score", placeholder: "test_cases_score", id: "id" },
+        {type: "hidden", defaultValue: updateFormData.code.final_cases_score, name: "code_final_cases_score", colSpan: "col-span-4 codingForm sm:col-span-2", label: "final cases score", placeholder: "final_cases_score", id: "id" },
+
+        {type: "text", defaultValue: updateFormData.code.title, name: "code_title", colSpan: "col-span-4 codingForm sm:col-span-4", label: "Code Title", placeholder: "Code Title", id: "id" },
+        {type: "editor", value: updateFormData.code.description, name: "description", colSpan: "col-span-4 codingForm sm:col-span-4", label: "Problem Statement", placeholder: "Problem Statement", id: "id", resize: "true", ref: uCodeDescription},
+        {type: "codeEditor", value: updateFormData.code.imports, name: "imports_code", colSpan: "col-span-4 codingForm sm:col-span-4", label: "Import Libraries", placeholder: "// Import Libraries here below this line", id: "uimports_code", resize: "true", ref: uCodeImports},
+        {type: "codeEditor", value: updateFormData.code.student_code, name: "student_code", colSpan: "col-span-4 codingForm sm:col-span-4", label: "Function difinition for students", placeholder: "// Give function definition for solution", id: "ustudent_code", resize: "true", ref: uCodeUserCode},
+        {type: "codeEditor", value: updateFormData.code.solution_code == null ? sampleCode : updateFormData.code.solution_code, name: "solution_code", colSpan: "col-span-4 codingForm sm:col-span-4", label: "Write your solution and test cases", placeholder: "// Import Libraries here below this line", id: "usolution_code", resize: "true", ref: uCodeSolution},
+        {type: "submit", colSpan: "col-span-2 sm:col-span-1"},
+        {type: "button", colSpan: "col-span-2 sm:col-span-1", color: "failure", value: "Delete"}
     ]
 
 
@@ -173,11 +373,17 @@ export default function CreateAssignment(props) {
         <>
 
                 <main>
-                    <div className="mx-automax-w-7xl py-6 px-1 sm:px-6 lg:px-8">
+                    <div className="w-screen py-6 px-1 sm:px-6 lg:px-8">
                         <div className='flex items-left flex-col'>
-                            <div className='grid grid-cols-3 gap-5'>
+                            <div className='p-3 grid grid-cols-4 gap-5'>
                              
-                                <FormGenerator heading="Create an assignment" inputs={createAssignmentForm} handleSubmit={handleSubmit} cols=" grid-cols-4 col-span-3">
+                                <FormGenerator heading="Create an assignment" inputs={createAssignmentForm} handleSubmit={handleSubmit} cols=" grid-cols-4 col-span-4 sm:col-span-2">
+
+                                </FormGenerator>
+
+                                <FormGenerator heading="Update an assignment" inputs={updateAssignmentForm} handleSubmit={handleUpdate} cols=" grid-cols-4 col-span-4 sm:col-span-2">
+
+                              
 
                                 </FormGenerator>
 

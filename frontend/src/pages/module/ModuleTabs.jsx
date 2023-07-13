@@ -23,6 +23,7 @@ import AssignmentList from '../../components/moduleTab/TabAssignmentList';
 import CourseUpdate from '../../components/moduleTab/CourseUpdate';
 import ModuleList from '../../components/moduleTab/TabModuleList';
 import TabStudentList from '../../components/moduleTab/TabStudentList';
+import GradeListStudent from '../../components/moduleTab/TabStudentGrade';
 
 async function loadGroups(user, cid, setAlert, userType) {
     // GET ALL GROUPS 
@@ -79,10 +80,11 @@ async function loadAssignments(user, cid, setAlert, userType) {
 async function loadHome(user, cid, setAlert, userType) {
     try {
 
-        const url = userType == "teacher" ? COURSE_URL.teacher.course.get : COURSE_URL.student.course.getSingle
+        const url = userType == "teacher" ? COURSE_URL.teacher.course.getSingle : COURSE_URL.student.course.getSingle
         const res = await axios.get(buildURL(url.replace("@cid", cid), user), buildHeader(user));
         
         const data = await res.data.data;
+        console.log("WOW GOT COURSE", res.data)
         if (data.length == 0) {
             showAlert(setAlert, "Course doesnt exists", "redirecting in 3 seconds");
         }
@@ -158,6 +160,7 @@ export default function ModuleTabs(props) {
         assignments: [],
         modules: {},
         moduleGroups: [],
+        accepted_domain: "",
     })
 
     const userType = user.group.toLowerCase()
@@ -181,6 +184,7 @@ export default function ModuleTabs(props) {
                     assignments: res.assignments,
                     moduleGroups: res.groups,
                     image: res.home.image,
+                    accepted_domain: res.home.accepted_domain,
                 }
             })
 
@@ -206,6 +210,9 @@ export default function ModuleTabs(props) {
             tabs.push({ title: "Student Details", icon: MdDashboard, children: <TabStudentList cid={cid} user={user} setUser={setUser} data={{ course, setCourse }} setAlert={setAlert}/>, attributes: {} })
             tabs.push({ title: "Course Settings", icon: MdDashboard, children: <CourseUpdate cid={cid} user={user} setUser={setUser} data={{ course, setCourse }} setAlert={setAlert}/>, attributes: {} })
         }
+        else{
+            tabs.push({ title: "Grades", icon: MdDashboard, children: <GradeListStudent cid={cid} user={user} setUser={setUser} data={{ course, setCourse }} setAlert={setAlert}/>, attributes: {} })
+        }
     }
 
     if (!loadingStatus) return <></>
@@ -213,7 +220,7 @@ export default function ModuleTabs(props) {
     return (
         <>
 
-            <div className="min-h-full">
+            <div className="h-full">
 
                 <Navigation header={course.title} image={course.image}></Navigation>
 

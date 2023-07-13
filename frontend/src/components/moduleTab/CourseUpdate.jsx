@@ -28,13 +28,13 @@ export default function CourseUpdate(props) {
 
     const user = props.user
     const {course, setCourse} = props.data
-
+    console.log("COURSE IS", course)
     const navigator = useNavigate()
 
     function handleDelete(e) {
         e.preventDefault();
 
-        var url = buildURL(COURSE_URL.teacher.delete, user) + cid + "/";
+        var url = COURSE_URL.teacher.course.delete.replace("@cid", cid)
 
         axios.delete(url, buildHeader(user)).then(res => {
             console.log("response", res)
@@ -63,7 +63,8 @@ export default function CourseUpdate(props) {
                 return {
                     ...prev,
                     title: formObject.title,
-                    description: formObject.description
+                    description: formObject.description,
+                    accepted_domain: formObject.accepted_domain
                 }
             })
             showAlert(props.setAlert, "Success", res, "success")
@@ -74,14 +75,28 @@ export default function CourseUpdate(props) {
 
     }
 
+    function handleCopy(e){
+        e.preventDefault();
+
+        axios.post(COURSE_URL.teacher.course.copyCourse.replace("@cid", cid), {}, buildHeader(user)).then(res => {
+            console.log("success", res)
+            showAlert(props.setAlert, "Success" , res, "success");
+        }).catch(err => {
+            console.log(err)
+            showAlert(props.setAlert, "Success" , err, "failure");
+        })
+    }
+
 
 
     const inputs = [
-        { type: "text", defaultValue: course.title, name: "title", colSpan: "col-span-1", label: "Course Name", required: true, placeholder: "Course name", id: "id" },
-        { type: "file", name: "file", colSpan: "col-span-1", label: "Upload Cover Picture", placeholder: "placeholder", id: "id", accept: ".jpg,.jpeg,.png" },
-        { type: "editor", name: "description", colSpan: "col-span-2", value: course.description, label: "Course Description", placeholder: "Course description", id: "id", resize: true, ref: courseDescription },
+        { type: "text", defaultValue: course.title, name: "title", colSpan: "col-span-4", label: "Course Name", required: true, placeholder: "Course name", id: "id" },
+        { type: "file", name: "file", colSpan: "col-span-4 sm:col-span-2", label: "Upload Cover Picture", placeholder: "placeholder", id: "id", accept: ".jpg,.jpeg,.png" },
+        {type: "text", name: "accepted_domain", defaultValue: course.accepted_domain, colSpan: "col-span-4 sm:col-span-2", label: "Accepted Domain", required: true, placeholder: "Something", id: "id", accept:".jpg,.jpeg,.png" },
+        { type: "editor", name: "description", colSpan: "col-span-4", value: course.description, label: "Course Description", placeholder: "Course description", id: "id", resize: true, ref: courseDescription },
         { type: "submit", colSpan: "col-span-1", label: "" },
-        { type: "button", colSpan: "col-span-1", value: "Delete", color: "failure", onClick: handleDelete }
+        { type: "button", colSpan: "col-span-1", value: "Delete", color: "failure", onClick: handleDelete },
+        { type: "button", colSpan: "col-span-1", value: "Copy", color: "failure", onClick: handleCopy }
     ]
 
     return (
@@ -91,10 +106,10 @@ export default function CourseUpdate(props) {
                 <main>
                     <div className="mx-automax-w-7xl py-6 px-1 sm:px-6 lg:px-8">
                         <div className='flex items-left flex-col'>
-                        <div className='grid grid-cols-3 w-full gap-5'>
-                            <FormGenerator inputs={inputs} heading="Course Settings" handleSubmit={handleSubmit}  cols=" grid-cols-2 col-span-3 ">
+                        <div className='grid grid-cols-3 p-3 sm:-4 w-full gap-5'>
+                            <FormGenerator inputs={inputs} heading="Course Settings" handleSubmit={handleSubmit}  cols=" grid-cols-4 col-span-3 ">
 
-                                <Badge style={{ padding: "15px" }} className='col-span-2'>
+                                <Badge style={{ padding: "15px" }} className='col-span-4'>
                                     Invite Token <b>{course.token}</b>
                                 </Badge>
 

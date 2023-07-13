@@ -14,7 +14,7 @@ import 'react-quill/dist/quill.snow.css';
 import FormGenerator from '../../components/FormGenerator';
 import DefaultList from '../../components/List';
 // import { Button, Label, } from 'flowbite-react';
-
+import { Link } from 'react-router-dom';
 
 export default function GradeAssignment(props) {
 
@@ -82,11 +82,25 @@ export default function GradeAssignment(props) {
 
     if (!isLoaded) return <></>
 
+
+    const downloadUserCode = () => {
+        const element = document.createElement("a");
+        const file = new Blob([remark.submission.code], {type: 'text/plain'});
+        element.href = URL.createObjectURL(file);
+        element.download = "code.py";
+        document.body.appendChild(element); // Required for this to work in FireFox
+        element.click();
+    }
+
+
+    const totalCodeScore = remark.compilation_score + remark.final_cases_score + remark.running_score + remark.test_cases_score
     const inputs = [
         {type: "editor", name: "report_remark", colSpan: "col-span-4", label: "Report Remarks", defaultValue: remark.report_remark, placeholder: "Report remarks", id: "id", ref: reportRemark},
         {type: "number", name: "report_score", colSpan: "col-span-4", label: "Report Remarks", defaultValue: remark.report_score, placeholder: "Report scores", id: "id"},
         {type: "code", hidable: "true", name: "code", disabled: true, value: remark.submission.code, colSpan: "col-span-4", label: "Student Code", placeholder: "User Code Here", id: "id"},
         {type: "editor", hidable: "true", name: "code_remark", colSpan: "col-span-4", label: "Code Remarks", defaultValue: remark.code_remark, placeholder: "Code remarks", id: "id", ref: codeRemark},
+        {type: "number", name: "code_quality", colSpan: "col-span-2", label: "Code Quality Score", defaultValue: remark.code_quality, placeholder: "Code quality scores", id: "id"},
+        {disabled: true, type: "number", name: "code_score", colSpan: "col-span-2", label: "Code Scores", defaultValue: totalCodeScore, placeholder: "Report scores", id: "id"},
         {type: "submit", colSpan: "col-span-1", label: ""}
     ]
 
@@ -119,8 +133,8 @@ export default function GradeAssignment(props) {
                                     Code {remark.submission.code_submitted ? "submitted" : "not submitted" }
                                 </Badge>
 
-                                <Badge style={{padding: "6px"}} className='col-span-1' color="failure">
-                                    Deadline Failed
+                                <Badge style={{padding: "6px"}} className='col-span-1' color={remark.submission.deadline_met ? "success" : "failure"}>
+                                    Deadline {remark.submission.deadline_met ? " Met" : " Failed"}
                                 </Badge>
 
                                 <Badge style={{padding: "6px"}} className='col-span-1' color={ remark.compilation_score == 0 ? "failure" : "success" }>
@@ -134,19 +148,26 @@ export default function GradeAssignment(props) {
                                 <Badge style={{padding: "6px"}} className='col-span-1' color={ remark.test_cases_score == 0 ? "failure" : "success" }>
                                     Test Cases {remark.test_cases_score == 0 ? "failed" : "passed" }
                                 </Badge>
-
+{/* 
                                 <Badge style={{padding: "6px"}} className='col-span-1' color={ remark.final_cases_score == 0 ? "failure" : "success" }>
                                     Hidden Cases {remark.final_cases_score == 0 ? "failed" : "passed" }
-                                </Badge>
+                                </Badge> */}
 
                                 <Badge style={{padding: "6px"}} className='col-span-1' color={ remark.submission.plag >= 20 ? "failure" : "success" }>
-                                    Plag Checked {remark.submission.plag >= 20 ? "failed" : "passed" }
+                                    Plag 5% {remark.submission.plag >= 20 ? "failed" : "passed" }
                                 </Badge>
 
 
 
 
-                                <Button className='col-span-4' onClick={ () => {window.open(API_URL + remark.submission.file)}} target="_blank">Download Report</Button>
+
+                                {
+                                    remark.submission.report_submitted ? <Button className={remark.submission.code_submitted == true ? "col-span-2" : "col-span-4"} as={Link} href={API_URL + remark.submission.file}> Download Report</Button> : <></>
+                                }
+
+{
+                                    remark.submission.code_submitted ? <Button className={remark.submission.report_submitted == true ? "col-span-2" : "col-span-4"} onClick={downloadUserCode}> Download Code</Button> : <></>
+                                }
                         </FormGenerator>
 
                             <div className=''>  

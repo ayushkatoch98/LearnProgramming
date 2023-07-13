@@ -16,66 +16,60 @@ import DefaultAccordion from '../Accordion';
 // import { Button, Label, } from 'flowbite-react';
 
 
-export default function ModuleList(props) {
+export default function GradeListStudent(props) {
 
     const setAlert = props.setAlert
     const user = props.user
     const setUser = props.setUser
+
         
     const navigator = useNavigate()
 
-    function handleDelete(mid){
+    const {cid} = useParams()
+
+    function handleDelete(aid){
         
         const data = {
-            mid : mid
+            aid : aid
         }
 
         const header = buildHeader(user);
         header.data = data
 
-        const url = buildURL(COURSE_URL.teacher.module.delete.replace("@cid", props.cid), user)
-        console.log("URL",  url)
+        const url = buildURL(COURSE_URL.teacher.assignment.delete.replace("@cid", props.cid), user)
         axios.delete(url, header ).then( res => {
             console.log("Response Del", res)
             showAlert(setAlert, "Deleted", res, "success");
 
-            const newObj = {}
-            var modules = props.data.course.modules
-            for (var key in modules){
-                if (!(key in newObj)){
-                    newObj[key] = []
-                }
-                console.log("loop for key", key)
-                for (var i = 0; i < modules[key].length; i++){
-                    console.log("Loop for modules key", key, modules[key][i] )
-                    if (modules[key][i].id != mid){
-                        newObj[key].push(modules[key][i]);
-                    }
+            var newAssignments = []
+
+            for (var i = 0; i < props.data.course.assignments.Assignments.length; i++){
+                if (props.data.course.assignments.Assignments[i].id != res.data.data.id){
+                    newAssignments.push(props.data.course.assignments.Assignments[i])
                 }
             }
-
-
-            console.log("NEW OBJ", newObj);
 
             props.data.setCourse(prev => {
                 return {
                     ...prev,
-                    modules: newObj
+                    "assignments" : {
+                        "Assignments": newAssignments
+                    }
                 }
             })
 
         }).catch(err => {
             console.log("Response Del", err)
-            showAlert(setAlert, "Something went wrong", err, "failure");
+            showAlert(setAlert, "Error", err, "failure");
 
         })
 
 
+
     }
-
  
-
-
+ 
+    
 
     return (
         
@@ -83,9 +77,9 @@ export default function ModuleList(props) {
                 <main>
                     <div className="mx-automax-w-7xl py-6 px-1 sm:px-6 lg:px-8">
                         <div className='flex items-left flex-col'>
-                            <div className='p-4 sm:p-10 border border-solid w-full flex-col gap-4'>
+                            <div className='border p-4 sm:p-10 shadow border-solid w-full flex-col gap-4'>
 
-                                <DefaultAccordion user={user} onView="none" onGrade="none" onDelete={handleDelete} data={props.data.course.modules}></DefaultAccordion>
+                                <DefaultAccordion user={user} onView='/course/@cid/grade/@id/' header="View Assignment Grades" cid={cid} onDelete={handleDelete} onDownload="none" data={props.data.course.assignments}></DefaultAccordion>
                                 
                             </div> 
 

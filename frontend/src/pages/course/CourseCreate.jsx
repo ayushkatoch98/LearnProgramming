@@ -2,7 +2,7 @@ import { Fragment, createRef, useContext, useEffect, useState } from 'react'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import Navigation from '../../components/Navigation';
-import { Button, Label, TextInput, FileInput } from 'flowbite-react';
+import { Button, Label, TextInput, FileInput, Badge } from 'flowbite-react';
 import Alerts from '../../components/Alert';
 import axios from 'axios';
 import { API_URL, COURSE_URL } from '../../constant';
@@ -67,6 +67,7 @@ export default function CourseCreate(props) {
  
         axios.post(url, formObject, buildHeader(user)).then(res => {
             console.log("response", res)
+            setTokenValue(res.data.data.token)
             showAlert(setAlert, "Success", res, "success")
         }).catch(err => {
             console.log("error", err)
@@ -99,11 +100,12 @@ export default function CourseCreate(props) {
     // colSpan, label, name, type
     // var titleV = titleValue.slice()
     const inputs = [
-        {type: "text", disabled: true, value: tokenValue, name: "nothing", colSpan: "col-span-2", label: "Invite Token", required: true, placeholder: "Course name", id: "id" },
-        {type: "text", defaultValue: titleValue, name: "title", colSpan: "col-span-1", label: "Course Name", required: true, placeholder: "Course name", id: "id" },
-        {type: "file", name: "file", colSpan: "col-span-1", label: "Upload Cover Picture", required: true, placeholder: "placeholder", id: "id", accept:".jpg,.jpeg,.png" },
-        {type: "editor", name: "description", colSpan: "col-span-2", label: "Course Description", placeholder: "Course description", id: "id", resize: true, "ref" : courseDescription},
-        {type: "submit", colSpan: "col-span-1", label: ""}
+        // {type: "text", disabled: true, value: tokenValue, name: "nothing", colSpan: "col-span-2", label: "Invite Token", required: true, placeholder: "Course name", id: "id" },
+        {type: "text", defaultValue: titleValue, name: "title", colSpan: "col-span-2 sm:col-span-2", label: "Course Name", required: true, placeholder: "Course name", id: "id" },
+        {type: "file", name: "file", colSpan: "col-span-2 sm:col-span-1", label: "Upload Cover Picture", required: true, placeholder: "placeholder", id: "id", accept:".jpg,.jpeg,.png" },
+        {type: "text", name: "accepted_domain", colSpan: "col-span-2 sm:col-span-1", label: "Upload Cover Picture", required: true, placeholder: "@gmail.com", id: "id", accept:".jpg,.jpeg,.png" },
+        {type: "editor", name: "description", colSpan: "col-span-2 sm:col-span-2", label: "Course Description", placeholder: "Course description", id: "id", resize: true, "ref" : courseDescription},
+        {type: "submit", colSpan: "col-span-2 sm:col-span-1", label: ""}
     ]
 
 
@@ -118,10 +120,18 @@ export default function CourseCreate(props) {
 
                 <main>
                     <div className="mx-automax-w-7xl py-6 px-1 sm:px-6 lg:px-8">
-                        <div className='flex items-center flex-col'>
+                        <div className='flex p-4 items-center flex-col'>
 
-                            <FormGenerator inputs={inputs} handleSubmit={handleSubmit} width="w-4/6" cols=" grid-cols-2 ">
-
+                            <FormGenerator inputs={inputs} handleSubmit={handleSubmit} width="w-full" cols=" grid-cols-2 ">
+                            
+                            { tokenValue != "" ? 
+                                <Badge className='col-span-2' style={{padding: "15px"}}>
+                                    <b>Invite Token:</b> {tokenValue}
+                                </Badge>
+                                :
+                                <></>
+                            }
+                                                            
                             </FormGenerator>
 
                           

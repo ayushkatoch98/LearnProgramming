@@ -4,6 +4,7 @@ from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from django.utils import timezone
 
+
 class Profile(models.Model):
     class Meta:
         db_table ="Profile"
@@ -41,6 +42,7 @@ class Course(models.Model):
     token = models.CharField(max_length=100, null=False, unique=True)
     image = models.ImageField(upload_to="courses/")
     is_deleted = models.BooleanField(default=False)
+    accepted_domain = models.CharField(default="@gmail.com", null=False, max_length=50)
     created_on = models.DateTimeField(auto_now_add=True)
     class Meta:
         unique_together = (('owner', 'title', 'is_deleted'),)
@@ -54,6 +56,7 @@ class CourseDetail(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     has_left = models.BooleanField(default=False)
     created_on = models.DateTimeField(auto_now_add=True)
+    request_accepted = models.BooleanField(default=True)
 
     class Meta:
         unique_together = [['student', 'course']]
@@ -118,7 +121,7 @@ class Assignment(models.Model):
         PROGRAMMING = "PROGRAMMING"
         BOTH = "BOTH"
 
-    title = models.CharField(max_length=100, null=False, unique=True)
+    title = models.CharField(max_length=100, null=False)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     # group = models.ForeignKey(AssignmentGroup, on_delete=models.CASCADE)
     is_published = models.BooleanField(default=True)
@@ -158,6 +161,7 @@ class AssignmentSubmission(models.Model):
     report_submitted = models.BooleanField(default=False)
     code_submitted = models.BooleanField(default=False)
     graded = models.BooleanField(default=False)
+    deadline_met = models.BooleanField(default=True)
 
 
     class Meta:
@@ -173,10 +177,11 @@ class AssignmentRemark(models.Model):
     report_remark = models.CharField(max_length=5000,default="No Remark Provided")
     code_remark = models.CharField(max_length=5000,default="No Remark Provided")
     report_score = models.IntegerField(default=0)    
-    compilation_score = models.IntegerField(null=False, default=10)
-    running_score = models.IntegerField(null=False, default=10)
-    test_cases_score = models.IntegerField(null=False, default=10)
-    final_cases_score = models.IntegerField(null=False, default=10)
+    compilation_score = models.IntegerField(null=False, default=0)
+    running_score = models.IntegerField(null=False, default=0)
+    test_cases_score = models.IntegerField(null=False, default=0)
+    final_cases_score = models.IntegerField(null=False, default=0)
+    code_quality = models.IntegerField(default=0)
 
     is_final_remark = models.BooleanField(default=True)
 

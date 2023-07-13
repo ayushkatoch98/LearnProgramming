@@ -10,12 +10,14 @@ const COURSE_URL = {
             post: API_URL + 'course/teacher/',
             put: API_URL + 'course/teacher/@cid/',
             delete: API_URL + 'course/teacher/@cid/',
+            copyCourse: API_URL + '/course/teacher/copy/@cid/'
         },
         module: {
             get: API_URL + "module/teacher/@cid/",
             gitSingle: API_URL + "module/teacher/@cid/@mid/",
             delete: API_URL + "module/teacher/@cid/",
             post: API_URL + "module/teacher/@cid/",
+            put: API_URL + "module/teacher/@cid/",
         },
         group: {
             url: API_URL + "group/teacher/@cid/",
@@ -37,6 +39,7 @@ const COURSE_URL = {
         // get joined student details courses
         courseDetail: {
             get: API_URL + 'coursedetail/teacher/@cid/',
+            post: API_URL + 'coursedetail/teacher/@cid/', // to accept / deny join request 
             delete: API_URL + 'coursedetail/teacher/@cid/',
         }
     },
@@ -67,6 +70,11 @@ const COURSE_URL = {
         courseDetail: {
             get: API_URL + 'coursedetail/student/',
             getSingle: API_URL + 'coursedetail/student/@cid/',
+            post: API_URL + "coursedetail/student/"
+        },
+
+        grade: {
+            get : API_URL + "grade/student/@cid/@aid/"
         }
     }
 }

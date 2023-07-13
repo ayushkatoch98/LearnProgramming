@@ -7,7 +7,7 @@ import Alerts from '../../components/Alert';
 import axios from 'axios';
 import { API_URL, COURSE_URL } from '../../constant';
 import { buildHeader, buildURL, hideAlert, showAlert} from '../../utility';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AppContext from '../../components/AppContext';
 import Cards from '../../components/Card.jsx';
 
@@ -51,7 +51,15 @@ export default function CourseList(props) {
                     <div className="mx-automax-w-7xl py-6 px-1 sm:px-6 lg:px-8">
                         <div className='flex items-center flex-col'>
 
-                            <div className='grid grid-cols-4 gap-5'>
+                            <div className='grid grid-cols-2 sm:grid-cols-9 gap-3'>
+                                {
+                                    user.group.toLowerCase() == "teacher" ? <Button as={Link} href='/course/create/' className='col-span-1' type='button'> Create Course </Button> : <></>
+                                }
+                                <Button as={Link} href='/course/join/' className='col-span-1' type='button'> Join Course </Button>
+                            </div>
+                            <br></br>
+                            <div className='grid grid-cols-1 sm:grid-cols-4 gap-5'>
+
 
                                 {
                                     

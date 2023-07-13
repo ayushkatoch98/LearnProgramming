@@ -39,14 +39,14 @@ export default function CourseJoin(props) {
         
         console.log("sending", formObject)
         
-        var url = buildURL(COURSE_URL.student.course.get, user);
+        var url = buildURL(COURSE_URL.student.courseDetail.post, user);
         console.log("URL is ", url)
         axios.post(url, formObject, buildHeader(user)).then(res => {
             console.log("response", res)
-            showAlert(setAlert, "Success", res.data.message, "success")
+            showAlert(setAlert, "Success", res, "success")
         }).catch(err => {
             console.log("error", err)
-            showAlert(setAlert, "Error", err.response.data.message, "failure")
+            showAlert(setAlert, "Error", err, "failure")
         })
         
     }
@@ -56,7 +56,7 @@ export default function CourseJoin(props) {
     // colSpan, label, name, type
     // var titleV = titleValue.slice()
     const inputs = [
-        {type: "text", name: "token", colSpan: "col-span-2", label: "Invite Token", required: true, placeholder: "Enter Token", id: "id" },
+        {type: "text", name: "token", colSpan: "col-span-2 sm:col-span-2", label: "Invite Token", required: true, placeholder: "Enter Token", id: "id" },
         {type: "submit", colSpan: "col-span-2", label: ""},
     ]
 
@@ -70,9 +70,9 @@ export default function CourseJoin(props) {
 
                 <main>
                     <div className="mx-automax-w-7xl py-6 px-1 sm:px-6 lg:px-8">
-                        <div className='flex items-center flex-col'>
+                        <div className='flex p-3 items-center flex-col'>
 
-                            <FormGenerator inputs={inputs} handleSubmit={handleSubmit} width="w-4/6" cols=" grid-cols-2 ">
+                            <FormGenerator inputs={inputs} handleSubmit={handleSubmit} width="w-full" cols=" grid-cols-2 ">
 
                             </FormGenerator>
 

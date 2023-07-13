@@ -14,13 +14,13 @@ export default function Navigation(props) {
                     <Navbar
                         fluid
                         rounded
+                        className='w-full'
                     >
                         <Navbar.Brand href="/" className='text-black hover:text-black'>
-                            <img
-                                alt="Flowbite React Logo"
+                            {/* <img
                                 className="mr-3 h-6 sm:h-9 rounded-full object-contain"
                                 src={API_URL + user.image}
-                            />
+                            /> */}
                             <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
                                 E-Learning Platform
                             </span>
@@ -57,7 +57,7 @@ export default function Navigation(props) {
                     "backgroundImage": "url('https://free4kwallpapers.com/uploads/originals/2022/07/16/-colorful-abstract-background-wallpaper.jpg')",
                     "backgroundSize": "cover",
                     "backgroundRepeat": "no-repeat"
-                }} className="w--full px-0 py-6 sm:px-6 lg:px-8">
+                }} className="w--full px-3  py-6 sm:px-6 lg:px-8">
                     <h1 className="text-3xl font-bold tracking-tight text-white">{props.header}</h1>
                 </div>
             </header>

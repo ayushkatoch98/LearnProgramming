@@ -113,6 +113,11 @@ class LoginAPI(KnoxLoginView):
         
         user = User.objects.get(username = request.data["username"])
         profile = Profile.objects.get(user__id = user.id)
+        image = ""
+        print("IMAGe", profile.image)
+        if profile.image != None and profile.image != "":
+            image = profile.image.url
+            
         returnData = {
             "id" : user.id,
             "first_name": user.first_name,
@@ -120,7 +125,7 @@ class LoginAPI(KnoxLoginView):
             "username": user.username,
             "email": user.email,
             "group": profile.group,
-            "image": profile.image.url,
+            "image": image,
             "token": a["token"],
             "expiry": a["expiry"],
         }

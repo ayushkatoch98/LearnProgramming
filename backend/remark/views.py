@@ -10,16 +10,23 @@ from useAuth.custom_permission import isStudent, isTeacher, isInCourse, isCourse
 from useAuth.utility import generateData
 from useAuth.serializers import AssignmentRemarkSerializer, AssignmentSubmissionSerializer
 
-class GradeViewStudent(viewsets.ViewSet):
+class GradeViewStudent(APIView):
 
     permission_classes = [permissions.IsAuthenticated, isStudent, isInCourse]
 
     def get(self, request, cid, aid):
 
         profile = Profile.objects.get(user__id = request.user.id)
-        remark = AssignmentRemark.objects.filter(student=profile, is_final_remark=True, submission__assignment__id = aid).first()
+        submission = AssignmentSubmission.objects.filter(assignment__id = aid, student = profile).first()
 
-        return Response(generateData("", False, AssignmentRemarkSerializer(remark).data), status=status.HTTP_200_OK)
+        if submission == None:
+            print("KEKEKEK")
+            return Response(generateData("You didn't submit the assignment", True), status=status.HTTP_404_NOT_FOUND)    
+        
+
+        remark = AssignmentRemark.objects.filter(submission = submission).first()
+
+        return Response(generateData("Your assignment remark", False, AssignmentRemarkSerializer(remark).data), status=status.HTTP_200_OK)
     
 
 class GradeView(APIView):
@@ -40,13 +47,16 @@ class GradeView(APIView):
 
         # course = Course.objects.filter(id = cid).first()
         # studentProfile = Profile.objects.get(user__id = uid)
-        
-        remark = AssignmentRemark.objects.filter(submission__id = sid, submission__assignment__id = aid).first()
+        submission = AssignmentSubmission.objects.get(id = sid)
+        remark = AssignmentRemark.objects.filter(submission = submission, submission__assignment__id = aid).first()
 
         remark.is_final_remark = True
         remark.code_remark = request.data["code_remark"]
         remark.report_remark = request.data["report_remark"]
         remark.report_score = request.data["report_score"]
+        remark.code_quality = request.data["code_quality"]
+        submission.graded = True
+        submission.save()
         remark.save()
      
         return Response(generateData("Remark saved", False, AssignmentRemarkSerializer(remark).data), status=status.HTTP_200_OK)

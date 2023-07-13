@@ -16,7 +16,7 @@ from django.core.files import File
 from useAuth.custom_permission import isStudent, isTeacher, isInCourse, isCourseOwner
 from useAuth.serializers import AssignmentSerializer, AssignmentCodeSerializer, AssignmentRemarkSerializer, AssignmentSubmissionSerializer
 from useAuth.utility import generateData
-
+from datetime import datetime
 
 def getAssginments(request, cid, aid=None):
     assignments = []
@@ -61,12 +61,23 @@ class AssignmentViewTeacher(APIView):
         hasCode = False
         if request.data["has_code"] == 'true':
             hasCode = True
+
+        # DATE TIME 2023-06-27 23:12
+
+        d = list(map(int, request.data["date"].split("-"))) 
+        t = list(map(int, request.data["time"].split(":"))) 
+
+        # YYYY , MM , DD HH MM
+        deadline = datetime(d[0], d[1], d[2], t[0], t[1] )
+        print("DATETIME is", deadline)
+
+
         # assignment, created = Assignment.objects.get_or_create(title=request.data["title"], group=assignmentGroup, defaults={"course": course, "file":image, "type": request.data["assignment_type"]})
-        assignment, created = Assignment.objects.get_or_create(title=request.data["title"], course__id = cid, defaults={"course": course, "file":image, "type": request.data["assignment_type"], "has_code": hasCode})
+        assignment, created = Assignment.objects.get_or_create(title=request.data["title"], course__id = cid, defaults={"course": course, "file":image, "type": request.data["assignment_type"], "has_code": hasCode, "deadline" : deadline})
         if not created:
             return Response(generateData("Assignment already exists", True), status=status.HTTP_409_CONFLICT)
             
-    
+
     
         try:
             assignmentCode = AssignmentCode.objects.create(
@@ -104,25 +115,44 @@ class AssignmentViewTeacher(APIView):
         assignment = Assignment.objects.filter(id=aid).first()
         if assignment == None:
             return Response(generateData("Couldnt find the assignment", True), status=status.HTTP_404_NOT_FOUND)
+            
+
+
+        # DATE TIME 2023-06-27 23:12
+
+        d = list(map(int, request.data["date"].split("-"))) 
+        t = list(map(int, request.data["time"].split(":"))) 
+
+        # YYYY , MM , DD HH MM
+        deadline = datetime(d[0], d[1], d[2], t[0], t[1] )
+        print("DATETIME is", deadline)
+
         
+        hasCode = False
+        if request.data["has_code"] == 'true':
+            hasCode = True
+
+        assignment.deadline = deadline
+        if "file" in request.FILES and request.FILES["file"] != None:
+            assignment.file = request.FILES["file"]
         assignment.title = request.data["title"]
         assignment.is_published = is_published
-        assignment.file = request.FILES["file"]
         assignment.type = request.data["assignment_type"]
+        assignment.has_code = hasCode
         assignment.save()
 
 
         assignmentCode = assignment.code
 
-        assignmentCode.title=request.data["code_title"], 
-        assignmentCode.description=request.data["code_description"],
-        assignmentCode.compilation_score=request.data["code_compilation_score"],
-        assignmentCode.running_score=request.data["code_running_score"],
-        assignmentCode.test_cases_score=request.data["code_test_cases_score"],
-        assignmentCode.final_cases_score=request.data["code_final_cases_score"],
-        assignmentCode.imports=request.data["imports_code"],
-        assignmentCode.code=request.data["solution_code"],
-        assignmentCode.user_code=request.data["user_code"]
+        assignmentCode.title=request.data["code_title"] 
+        assignmentCode.description=request.data["code_description"]
+        assignmentCode.compilation_score=request.data["code_compilation_score"]
+        assignmentCode.running_score=request.data["code_running_score"]
+        assignmentCode.test_cases_score=request.data["code_test_cases_score"]
+        assignmentCode.final_cases_score=request.data["code_final_cases_score"]
+        assignmentCode.imports=request.data["imports_code"]
+        assignmentCode.solution_code=request.data["solution_code"]
+        assignmentCode.student_code=request.data["student_code"]
 
         assignmentCode.save()
     

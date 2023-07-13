@@ -77,27 +77,27 @@ export default function Profile(props) {
 
     const inputs = [
         
-        {type: "text", defaultValue: user.first_name, name: "first_name", colSpan: "col-span-1", label: "First Name", required: true, placeholder: "First Name", id: "id" },
-        {type: "text", defaultValue: user.last_name, name: "last_name", colSpan: "col-span-1", label: "Last Name", required: true, placeholder: "Last Name", id: "id" },
-        {type: "file", name: "file", colSpan: "col-span-1", label: "Upload Profile Picture", required: true, placeholder: "placeholder", id: "id", accept:".jpg,.jpeg,.png" },
-        {type: "submit", colSpan: "col-span-2", label: ""}
+        {type: "text", defaultValue: user.first_name, name: "first_name", colSpan: "col-span-2 sm:col-span-1", label: "First Name", required: true, placeholder: "First Name", id: "id" },
+        {type: "text", defaultValue: user.last_name, name: "last_name", colSpan: "col-span-2 sm:col-span-1", label: "Last Name", required: true, placeholder: "Last Name", id: "id" },
+        {type: "file", name: "file", colSpan: "col-span-2 sm:col-span-1", label: "Upload Profile Picture", required: true, placeholder: "placeholder", id: "id", accept:".jpg,.jpeg,.png" },
+        {type: "submit", colSpan: "col-span-2 sm:col-span-2", label: ""}
     ]
 
 
     return (
         <>
 
-            <div className="min-h-full">
+            <div className="h-full w-full">
 
                 <Navigation header={props.header}></Navigation>
                 
                 <Alerts hidden={alert.hidden} title={alert.title} description={alert.description} color={alert.color}></Alerts>
 
                 <main>
-                    <div className="mx-automax-w-7xl py-6 px-1 sm:px-6 lg:px-8">
-                        <div className='flex items-center flex-col'>
+                    <div className="w-full py-6 px-1 sm:px-6 lg:px-8">
+                        <div className='flex p-3 items-center flex-col'>
 
-                            <FormGenerator heading="Profile Setting" inputs={inputs} handleSubmit={handleSubmit} width="w-4/6" cols=" grid-cols-2 ">
+                            <FormGenerator heading="Profile Setting" inputs={inputs} handleSubmit={handleSubmit} width="w-full" cols="grid-cols-2 ">
 
                             </FormGenerator>
 
