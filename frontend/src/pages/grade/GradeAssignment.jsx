@@ -61,14 +61,15 @@ export default function GradeAssignment(props) {
         axios.get(buildURL(COURSE_URL.teacher.grade.url.replace("@cid", cid).replace("@aid", aid).replace("@sid", sid ), user), buildHeader(user)).then(res => {
           
             console.log("response GET", res)
-          
-            const data = res.data.data;
+            console.log("Similarity", res.data.similarity)
+            const data = res.data.data.data;
             console.log("NEW DATA", data);
 
             setRemark(prev => {
                 return {
                     ...prev,
-                    ...data
+                    ...data,
+                    similarity: res.data.similarity 
                 }
 
             })
@@ -153,13 +154,9 @@ export default function GradeAssignment(props) {
                                     Hidden Cases {remark.final_cases_score == 0 ? "failed" : "passed" }
                                 </Badge> */}
 
-                                <Badge style={{padding: "6px"}} className='col-span-1' color={ remark.submission.plag >= 20 ? "failure" : "success" }>
-                                    Plag 5% {remark.submission.plag >= 20 ? "failed" : "passed" }
+                                <Badge style={{padding: "6px"}} className='col-span-1' color={ remark.similarity >= 85 ? "failure" : "success" }>
+                                    Plag {remark.similarity}% {remark.similarity >= 85 ? "failed" : "passed" }
                                 </Badge>
-
-
-
-
 
                                 {
                                     remark.submission.report_submitted ? <Button className={remark.submission.code_submitted == true ? "col-span-2" : "col-span-4"} as={Link} href={API_URL + remark.submission.file}> Download Report</Button> : <></>
@@ -169,11 +166,6 @@ export default function GradeAssignment(props) {
                                     remark.submission.code_submitted ? <Button className={remark.submission.report_submitted == true ? "col-span-2" : "col-span-4"} onClick={downloadUserCode}> Download Code</Button> : <></>
                                 }
                         </FormGenerator>
-
-                            <div className=''>  
-
-                            Has_code {remark.submission.assignment.has_code + ""} </div>
-                            <div className=''> Submission Status  {"Report " + remark.submission.report_submitted + " Code " + remark.submission.code_submitted} </div>
 
 
                         </div>

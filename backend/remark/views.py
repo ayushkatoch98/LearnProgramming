@@ -10,6 +10,54 @@ from useAuth.custom_permission import isStudent, isTeacher, isInCourse, isCourse
 from useAuth.utility import generateData
 from useAuth.serializers import AssignmentRemarkSerializer, AssignmentSubmissionSerializer
 
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from PyPDF2 import PdfReader
+
+
+def getPDFText(url):   
+    output = ""
+    reader = PdfReader("." + url)
+    l = len(reader.pages)
+
+    # print('Total Pages', l)
+
+    for i in range(0, l):
+        output += reader.pages[i].extract_text()
+
+    # print("returning", output)
+    return output
+
+def detectPlag(mainSubmission, aid):
+    
+    submissions = AssignmentSubmission.objects.filter(assignment__id = aid, report_submitted = True)
+    
+    documents = []
+
+    for submission in submissions:
+        
+        if submission.id != mainSubmission.id:
+            # print("Running", submission.id)
+            a = getPDFText(submission.file.url)
+            
+            documents.append(a)
+        
+    if len(documents) == 0:
+        return [0]
+    
+    # print(documents[0] , "\n\n\n\n", documents[1])
+    work =  getPDFText(mainSubmission.file.url)
+
+    # fitting 
+    vectorizer = TfidfVectorizer(lowercase=True)
+    transformed = vectorizer.fit_transform(documents)
+
+    # checking 
+    query = vectorizer.transform([getPDFText(mainSubmission.file.url)])
+    cosineSimilarities = cosine_similarity(query, transformed).flatten()
+    
+    return cosineSimilarities
+
 class GradeViewStudent(APIView):
 
     permission_classes = [permissions.IsAuthenticated, isStudent, isInCourse]
@@ -20,7 +68,6 @@ class GradeViewStudent(APIView):
         submission = AssignmentSubmission.objects.filter(assignment__id = aid, student = profile).first()
 
         if submission == None:
-            print("KEKEKEK")
             return Response(generateData("You didn't submit the assignment", True), status=status.HTTP_404_NOT_FOUND)    
         
 
@@ -38,8 +85,20 @@ class GradeView(APIView):
         # sid = submission id 
         remark = AssignmentRemark.objects.filter(submission__id = sid, submission__assignment__id = aid).first()
 
-        data = generateData("" , False, AssignmentRemarkSerializer(remark).data)
+        d = generateData("" , False, AssignmentRemarkSerializer(remark).data)
 
+        plag = [0]
+        if remark.submission.report_submitted:
+            plag = int(max(detectPlag(remark.submission, aid)) * 100)
+        
+        remark.submission.plag = plag
+        remark.save()
+        remark.submission.save()
+
+        data = {
+            "data" : d,
+            "similarity": plag
+        }
         return Response(data, status=status.HTTP_200_OK)
     
     # uid is user id 

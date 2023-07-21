@@ -113,7 +113,6 @@ export default function CourseUpdate(props) {
                                     Invite Token <b>{course.token}</b>
                                 </Badge>
 
-
                             </FormGenerator>
                             </div>
 

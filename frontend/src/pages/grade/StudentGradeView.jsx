@@ -69,13 +69,21 @@ export default function StudentGradeView(props) {
             setRemark(prev => {
                 return {
                     ...prev,
-                    ...data
+                    ...data,
+                    total_code_score: data.compilation_score + data.final_cases_score + data.running_score + data.test_cases_score 
                 }
 
             })
             setIsLoaded(true)
         }).catch(err => {
             console.log("err", err)
+            if (err.response.status == 404){
+                setRemark(prev => {
+                    return null
+                })   
+
+                setIsLoaded(true)   
+            }
         })
     }, []);
 
@@ -95,17 +103,17 @@ export default function StudentGradeView(props) {
       
 
     const inputs = [
-        {disabled: true, type: "number", name: "report_score", colSpan: "col-span-2", label: "Report Scores", defaultValue: remark.report_score, placeholder: "Report scores", id: "id"},
-        {disabled: true, type: "number", name: "code_score", colSpan: "col-span-2", label: "Code Scores (Automatic)", defaultValue: remark.report_score, placeholder: "Report scores", id: "id"},
-        {disabled: true, type: "number", name: "code_quality", colSpan: "col-span-2", label: "Code quality scores", defaultValue: remark.code_quality, placeholder: "Report scores", id: "id"},
-        // {disabled: true, type: "hidden", name: "dfds", colSpan: "col-span-6", label: "Code quality scores", defaultValue: remark.code_quality, placeholder: "Report scores", id: "id"},
-        {disabled: true, type: "editor", name: "report_remark", colSpan: "col-span-6", label: "Report Remarks", defaultValue: remark.report_remark, placeholder: "Report remarks", id: "id", ref: reportRemark},
-        {disabled: true, type: "editor", hidable: "true", name: "code_remark", colSpan: "col-span-6", label: "Code Remarks", defaultValue: remark.code_remark, placeholder: "Code remarks", id: "id", ref: codeRemark},
-        // {disabled: true, type: "code", hidable: "true", name: "code", value: remark.submission.code, colSpan: "col-span-6", label: "Your Code", placeholder: "User Code Here", id: "id"},
+        {disabled: true, type: "number", name: "report_score", colSpan: "col-span-2", label: "Report Scores", defaultValue: remark?.report_score, placeholder: "Report scores", id: "id"},
+        {disabled: true, type: "number", name: "code_score", colSpan: "col-span-2", label: "Code Scores (Automatic)", defaultValue: remark?.total_code_score, placeholder: "Report scores", id: "id"},
+        {disabled: true, type: "number", name: "code_quality", colSpan: "col-span-2", label: "Code quality scores", defaultValue: remark?.code_quality, placeholder: "Report scores", id: "id"},
+        // {disabled: true, type: "hidden", name: "dfds", colSpan: "col-span-6", label: "Code quality scores", defaultValue: remark?.code_quality, placeholder: "Report scores", id: "id"},
+        {disabled: true, type: "editor", name: "report_remark", colSpan: "col-span-6", label: "Report Remarks", defaultValue: remark?.report_remark, placeholder: "Report remarks", id: "id", ref: reportRemark},
+        {disabled: true, type: "editor", hidable: "true", name: "code_remark", colSpan: "col-span-6", label: "Code Remarks", defaultValue: remark?.code_remark, placeholder: "Code remarks", id: "id", ref: codeRemark},
+        // {disabled: true, type: "code", hidable: "true", name: "code", value: remark?.submission.code, colSpan: "col-span-6", label: "Your Code", placeholder: "User Code Here", id: "id"},
         // {disabled: true, type: "submit", colSpan: "col-span-1", label: ""}
     ]
 
-    if (!remark.submission.assignment.has_code){
+    if (remark != null && !remark.submission.assignment.has_code){
         for (var i = 0; i < inputs.length; i++){
             if (inputs[i]?.hidable != undefined){
                 inputs[i].type = "hidden"
@@ -124,7 +132,9 @@ export default function StudentGradeView(props) {
                 <main>
                     <div className="mx-automax-w-7xl py-6 px-1 sm:px-6 lg:px-8">
                         <div className='flex items-center flex-col'>
-
+                            {
+                                remark == null ? <h1>You didnt submit the assignment</h1> :
+                            
                         <FormGenerator inputs={inputs} handleSubmit={() => console.log("submit")} width="w-4/6" cols=" grid-cols-6">
                                 <Badge style={{padding: "6px"}} className='col-span-2' color={ remark.submission.report_submitted ? "success" : "failure" }>
                                     Report {remark.submission.report_submitted ? "submitted" : "not submitted" }
@@ -154,8 +164,8 @@ export default function StudentGradeView(props) {
                                     Hidden Cases {remark.final_cases_score == 0 ? "failed" : "passed" }
                                 </Badge> */}
 
-                                <Badge style={{padding: "6px"}} className='col-span-2' color={ remark.submission.plag >= 20 ? "failure" : "success" }>
-                                    Plag 5% 
+                                <Badge style={{padding: "6px"}} className='col-span-2' color={ remark.submission.plag >= 85 ? "failure" : "success" }>
+                                    Plag {remark.submission.plag}%
                                 </Badge>
                                 
                                 <div className='col-span-6'></div>
@@ -173,13 +183,9 @@ export default function StudentGradeView(props) {
                                     remark.submission.code_submitted ? <Button className={remark.submission.report_submitted == true ? "col-span-3" : "col-span-6"} onClick={downloadUserCode}> Download Code</Button> : <></>
                                 }
                         </FormGenerator>
+}
 
-                            <div className=''>  
-
-                            Has_code {remark.submission.assignment.has_code + ""} </div>
-                            <div className=''> Submission Status  {"Report " + remark.submission.report_submitted + " Code " + remark.submission.code_submitted} </div>
-
-
+                      
                         </div>
                     </div>
                 </main>
