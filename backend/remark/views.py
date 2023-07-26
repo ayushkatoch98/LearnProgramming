@@ -33,17 +33,21 @@ def detectPlag(mainSubmission, aid):
     submissions = AssignmentSubmission.objects.filter(assignment__id = aid, report_submitted = True)
     
     documents = []
-
+    print("TOTAL SUBMISSIONS", len(submissions))
     for submission in submissions:
         
         if submission.id != mainSubmission.id:
             # print("Running", submission.id)
             a = getPDFText(submission.file.url)
-            
+            print("TEXT IS", a)
+            if a == '' or len(a) == 0 or a == ' ':
+                continue
             documents.append(a)
         
     if len(documents) == 0:
         return [0]
+    
+    print("DOCUMENTS ARE", documents)
     
     # print(documents[0] , "\n\n\n\n", documents[1])
     work =  getPDFText(mainSubmission.file.url)
@@ -87,10 +91,11 @@ class GradeView(APIView):
 
         d = generateData("" , False, AssignmentRemarkSerializer(remark).data)
 
-        plag = [0]
+        plag = 0
         if remark.submission.report_submitted:
             plag = int(max(detectPlag(remark.submission, aid)) * 100)
         
+
         remark.submission.plag = plag
         remark.save()
         remark.submission.save()
