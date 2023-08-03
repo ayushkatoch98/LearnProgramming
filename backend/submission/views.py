@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from useAuth.models import Module, ModuleGroup, Profile, Course, AssignmentRemark, CourseDetail, AssignmentSubmission, Assignment
+from useAuth.models import Module, ModuleGroup, Profile, Course, AssignmentRemark, CourseDetail, AssignmentSubmission, Assignment, AssignmentGroup
 from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework import status, viewsets
@@ -75,8 +75,19 @@ class CodeRunner():
         return False, "\n" + a.decode(), scores
         
 
+def getGroup(request, assignment, profile):
+    
+    g = AssignmentGroup.objects.filter(assignment=assignment, student_one = profile) | AssignmentGroup.objects.filter(assignment=assignment, student_two = profile)
+    g = g.first()
+    if g == None:
+        return {}
+    data = {
+        "student_one" : g.student_one.user.first_name + " " + g.student_one.user.last_name,
+        "student_two" : g.student_two.user.first_name + " " + g.student_two.user.last_name
+    }
+    
 
-        
+    return data
 
 
 
@@ -84,7 +95,7 @@ class SubmissionViewStudent(APIView):
     permission_classes = [permissions.IsAuthenticated, isStudent|isTeacher, isInCourse]
 
     def get(self, request, cid, aid):
-        
+        print("HMMM")
         profile = Profile.objects.get(user__id = request.user.id)
 
         assignments = Assignment.objects.filter(course__id = cid, id = aid, is_deleted=False)
@@ -100,6 +111,7 @@ class SubmissionViewStudent(APIView):
 
         data = AssignmentSerializer(assignments).data
         data["submission"] = AssignmentSubmissionSerializer(submission).data
+        data["group"] = getGroup(request, assignments, profile)
         return Response(generateData("", False, data), status=status.HTTP_200_OK)
     
 
@@ -108,11 +120,21 @@ class SubmissionViewStudent(APIView):
      
         profile = Profile.objects.get(user__id = request.user.id)
         course = Course.objects.get(id = cid)
-
+        profile2 = None
     
         assignment = Assignment.objects.filter(id = aid, is_deleted=False).first()
         if assignment == None:
             return Response(generateData("Couldnt find the assignment", True), status=status.HTTP_404_NOT_FOUND)
+
+        if assignment.is_group:
+            result = AssignmentGroup.objects.filter(assignment=assignment, student_one = profile) | AssignmentGroup.objects.filter(assignment=assignment, student_two = profile)
+            result = result.first()
+
+            if result.student_one == profile:
+                profile2 = result.student_two
+            else:
+                profile2 = result.student_one   
+
 
         file = None
         if "file" in request.FILES:
@@ -133,11 +155,19 @@ class SubmissionViewStudent(APIView):
                 "deadline_met": deadlineMet
             })
         elif request.data["request_type"] == "code":
+            
             submission, created = AssignmentSubmission.objects.update_or_create(assignment=assignment, student = profile, defaults={
                 "code" : request.data["code"],
                 "code_submitted" : True,
                 "deadline_met": deadlineMet
             })
+
+            if assignment.is_group:
+                submission2, created = AssignmentSubmission.objects.update_or_create(assignment=assignment, student = profile2, defaults={
+                    "code" : request.data["code"],
+                    "code_submitted" : True,
+                    "deadline_met": deadlineMet
+                })
         
         scores = {
             "compile" : 0,
@@ -149,7 +179,7 @@ class SubmissionViewStudent(APIView):
         ENTIRE_CODE = "NOTHING"
         err = False
         output = ""
-        if request.data["request_type"] == "code": 
+        if request.data["request_type"] == "code" and request.data["run_code"] == "true": 
             ENTIRE_CODE = request.data["code"].strip() + "\n\n\n" + assignment.code.solution_code
             print("ENTIRE CODE", ENTIRE_CODE)
             err , output, scores = CodeRunner.run(ENTIRE_CODE)
@@ -181,6 +211,14 @@ class SubmissionViewStudent(APIView):
                                                     test_cases_score = scores["test_cases_score"],
                                                     final_cases_score = scores["final_cases_score"],
                                                     is_final_remark = False)
+            
+            if assignment.is_group:
+                remark = AssignmentRemark.objects.create(submission = submission2, remark_by=course.owner, report_score = 0, 
+                                                    compilation_score = scores["compile"],
+                                                    running_score = scores["running"],
+                                                    test_cases_score = scores["test_cases_score"],
+                                                    final_cases_score = scores["final_cases_score"],
+                                                    is_final_remark = False)
         except:
             remark = AssignmentRemark.objects.filter(submission = submission, submission__assignment__id = aid).first()
             if request.data["request_type"] == "report":
@@ -192,6 +230,18 @@ class SubmissionViewStudent(APIView):
                 remark.final_cases_score = scores["final_cases_score"]
 
             remark.save()
+
+            if assignment.is_group:
+                remark = AssignmentRemark.objects.filter(submission = submission2, submission__assignment__id = aid).first()
+                if request.data["request_type"] == "report":
+                    remark.report_score = 0
+                else:
+                    remark.compilation_score = scores["compile"]
+                    remark.running_score = scores["running"]
+                    remark.test_cases_score = scores["test_cases_score"]
+                    remark.final_cases_score = scores["final_cases_score"]
+
+                remark.save()
             
         data = {
             "ENTIRE_CODE" : ENTIRE_CODE,

@@ -32,9 +32,12 @@ export default function AssignmentSubmit(props) {
         hidden: "hidden"
     });
 
+    var [submitCode, setSubmitCode] = useState(true)
+
     const {user, setUser} = useContext(AppContext);
     const navigator = useNavigate()
 
+   
     const [assignmentData, setAssignmentData] = useState({})
     const [output, setOutput] = useState({
         error: false,
@@ -44,7 +47,36 @@ export default function AssignmentSubmit(props) {
     const [isLoading, setIsLoading] = useState(true)
     const {cid, aid} = useParams()
 
+    function whatever(){
+          
+        axios.get(buildURL(COURSE_URL.student.submission.get.replace("@cid", cid).replace("@aid", aid), user), buildHeader(user)).then(res => {
+            console.log("Loading");
+            const data = res.data.data;
+            const reportStatus = data.submission.report_submitted
+            const codeStatus = data.submission.code_submitted
+            const finalStatus = reportStatus + "\n" + codeStatus
+            
 
+            setAssignmentData( prev => {
+                return {
+                    ...prev,
+                    ...data
+                }
+            })
+
+            setSubmissionStatus(prev => {
+                return {
+                    ...prev,
+                    code : codeStatus,
+                    report: reportStatus
+                }
+            })
+            setIsLoading(false);
+            
+        }).catch(err => {
+            console.log("err", err)
+        })
+    }
 
     useEffect(() => {
         
@@ -99,6 +131,13 @@ export default function AssignmentSubmit(props) {
         })
 
     }
+
+    const a = window.setTimeout( function(e){
+        console.log("submitting");
+        whatever();
+    }, 5000 );
+
+
     function handleRun(e){
         e.preventDefault();
     }
@@ -106,19 +145,29 @@ export default function AssignmentSubmit(props) {
         e.preventDefault();
     }
     function handleCodeSubmit(e){
-        e.preventDefault();
-
+        // submitCode = false;
+        clearTimeout(a);
+        setSubmitCode(false);
+        if (e != false)
+            e.preventDefault();
+        
+        
 
         var data = {}
         
         data["code"] = $("#userCode").val()
         data["aid"] = aid;
         data["request_type"] = "code"
-        console.log("sending", data)
+        if (e == false)
+            data["run_code"] = "false"
+        else 
+            data["run_code"] = "true"
+            
+        // console.log("sending", data)
         
 
         axios.post(buildURL(COURSE_URL.student.submission.post.replace("@cid", cid).replace("@aid", aid), user) , data, buildHeader(user)).then(res => {
-            console.log("res" , res)
+            // console.log("res" , res)
             // assignmentData.submission.code = res.data.data.ENTIRE_CODE
 
             // setAssignmentData(prev => {
@@ -131,21 +180,41 @@ export default function AssignmentSubmit(props) {
             //     }
             // })
 
-            setOutput(prev => {
+            if (e != false){
+                setOutput(prev => {
+                    return {
+                        ...prev,
+                        error : res.data.data.codeError,
+                        output : res.data.data.codeOutput
+                    }
+                })
+
+           
+            }
+            if (e == false){
+            setAssignmentData( prev => {
+                console.log("NEW CODE", res.data.data.submission.code);
                 return {
                     ...prev,
-                    error : res.data.data.codeError,
-                    output : res.data.data.codeOutput
+                    "submission" : {
+                        ...prev["submission"],
+                        "code" : res.data.data.submission.code,
+                    }
                 }
-            })
+                
+            });
+            setSubmitCode(true);
+        }
             showAlert(setAlert, "success", res, "success");
+            setSubmitCode(true);
         }).catch(err => {
             showAlert(setAlert, "Something went wrong", err, "failure");
             console.log("err", err)
+            setSubmitCode(true);
         })
     }
 
-
+ 
     const uploadAssignmentForm = [
         // {type: "text", disabled: true, colSpan: "col-span-1", value: submissionStatus.report, name: "nothing", label: "Report Status", required: true, placeholder: "Course name", id: "id"},
         // {type: "text", disabled: true, colSpan: "col-span-1", value: submissionStatus.code, name: "nothing", label: "Code Status", required: true, placeholder: "Course name", id: "id"},
@@ -175,7 +244,25 @@ export default function AssignmentSubmit(props) {
                         <div className='gap-y-0'>
 
                         
-                        <FormGenerator heading="Upload Asssignment" inputs={uploadAssignmentForm} handleSubmit={handleReportSubmit} cols="m-2 grid-cols-2 col-span-4">
+                        <FormGenerator  heading="Upload Asssignment" inputs={uploadAssignmentForm} handleSubmit={handleReportSubmit} cols="m-2 grid-cols-2 col-span-4">
+                            
+                            { assignmentData.is_group ?
+                            
+                                (
+                                    <>
+                                    <Badge style={{padding: "6px"}} className='col-span-1' >
+                                        Member One {assignmentData.group.student_one}
+                                    </Badge>
+
+                                    <Badge style={{padding: "6px"}} className='col-span-1' >
+                                        Member Two {assignmentData.group.student_two }
+                                    </Badge>
+                                    </>
+                                ) 
+                            : 
+                                <></>
+                            }
+
                             <Badge style={{padding: "6px"}} className='col-span-1' color={ submissionStatus.report ? "success" : "warning" }>
                                 Report {submissionStatus.report ? "submitted" : "not submitted" }
                             </Badge>
@@ -232,6 +319,7 @@ export default function AssignmentSubmit(props) {
                                 placeholder="Please enter JS code."
                                 value={ assignmentData.submission.code == undefined || assignmentData.submission.code == "" ? "#do not change the import lines, this will break your code\n" + assignmentData.code.imports + "\n\n\n" + assignmentData.code.student_code : assignmentData.submission.code}
                                 data-color-mode="dark"
+                                onChange={() => handleCodeSubmit(false) }
                                 padding={30}
                                 style={{
                                     width: "59%",

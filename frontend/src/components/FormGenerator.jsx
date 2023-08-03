@@ -215,7 +215,7 @@ export default function FormGenerator(props) {
 
 
     return (
-        <form onSubmit={props.handleSubmit} className={`border p-3 sm:p-10 shadow border-solid flex ${props.width} grid ${props.cols} flex-col gap-4`}>
+        <form onSubmit={props.handleSubmit} id={props.formID} className={`border p-3 sm:p-10 shadow border-solid flex ${props.width} grid ${props.cols} flex-col gap-4`}>
             <h3 className="mb-2 mt-0 text-2xl font-medium leading-tight  col-span-full">
                 {props.heading}
             </h3>

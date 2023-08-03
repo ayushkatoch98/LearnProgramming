@@ -101,6 +101,7 @@ if not test_passed:
     const datetimeRef = createRef('//Enter your code below');
     const codeSolution = createRef('//Enter your code below');
     const fromVisi = createRef(true);
+    const fromGroup = createRef(true);
     const uCodeDescription = createRef('');
     const uCodeImports = createRef('//Enter your code below');
     const uCodeUserCode = createRef('//Enter your code dsfdsfsdf');
@@ -108,6 +109,7 @@ if not test_passed:
     const uCodeSolution = createRef('//Enter your code below');
     const uFromVisi = createRef(true);
     const uSelectInputRef = createRef("IDK")
+    const ufromGroup = createRef(true);
     // const [reload, setReload] = useState(true)
     
     
@@ -154,6 +156,7 @@ if not test_passed:
         formObject.assignment_type = e.target.checkbox9.checked == true ? "BOTH" : "REPORT"
         formObject.has_code = e.target.checkbox9.checked
         formObject.code_description = codeDescription.current.value
+        formObject.is_group = e.target.isGroupID.checked
         // formObject.user_code = cUserCode
         // formObject.code = cSolution
         // formObject.imports_code = cImports
@@ -234,6 +237,7 @@ if not test_passed:
         formObject.assignment_type = e.target.checkbox9.checked == true ? "BOTH" : "REPORT"
         formObject.has_code = e.target.checkbox9.checked
         formObject.code_description = cDescription
+        formObject.is_group = e.target.isGroupID.checked
         // formObject.user_code = cUserCode
         // formObject.code = cSolution
         // formObject.imports_code = cImports
@@ -323,6 +327,7 @@ if not test_passed:
         {type: "file", name: "file", colSpan: "col-span-4 sm:col-span-2", label: "Upload Module", required: true, placeholder: "placeholder", id: "id", accept:".pdf,.ppt,.pptx,.txt" },
         {type: "checkbox", name: "is_published", colSpan: "col-span-4 sm:col-span-1", label: "Publish", placeholder: "placeholder", id: "checkbox10", cols: "grid-cols-1", options: [{value: "Publish", defaultChecked: true}] },
         {type: "checkbox", name: "has_code", colSpan: "col-span-4 sm:col-span-1", label: "Is Coding", placeholder: "placeholder", id: "checkbox9", cols: "grid-cols-1", onChange: toggleCodeView,  ref: fromVisi, options: [{value: "Is coding", defaultChecked:"true"}] },
+        {type: "checkbox", name: "is_group", colSpan: "col-span-4 sm:col-span-1", label: "Is Group", placeholder: "placeholder", id: "isGroupID", cols: "grid-cols-1", ref: fromGroup, options: [{value: "Is Group", defaultChecked:"true"}] },
         {type: "datetime", name1: "deadlineDate", name2: "deadlineTime", colSpan: "col-span-4 sm:col-span-2", label: "Assignment Deadline Date", required: true, placeholder: "Assignment Deadline", id1: "date", id2: "time"},
      
         {type: "hr", colSpan: "col-span-4 codingForm col-span-4"},
@@ -349,6 +354,7 @@ if not test_passed:
         {type: "file", name: "file", colSpan: "col-span-4 sm:col-span-2", label: "Upload Module", placeholder: "placeholder", id: "id", accept:".pdf,.ppt,.pptx,.txt" },
         {type: "checkbox", name: "is_published", colSpan: "col-span-4 sm:col-span-1", label: "Publish", placeholder: "placeholder", id: "checkbox10", cols: "grid-cols-1", options: [{value: "Publish", defaultChecked: updateFormData.is_published}] },
         {type: "checkbox", name: "has_code", colSpan: "col-span-4 sm:col-span-1", label: "Is Coding", placeholder: "placeholder", id: "checkbox9", cols: "grid-cols-1", onChange: toggleCodeView,  ref: uFromVisi, options: [{value: "Is coding", defaultChecked: updateFormData.has_code}] },
+        {type: "checkbox", name: "is_group", colSpan: "col-span-4 sm:col-span-1", label: "Is Group", placeholder: "placeholder", id: "isGroupID", cols: "grid-cols-1", ref: ufromGroup, options: [{value: "Is Group", defaultChecked:"true"}] },
         {type: "datetime", name1: "deadlineDate", name2: "deadlineTime", colSpan: "col-span-4 sm:col-span-2", label: "Assignment Deadline Date", required: true, placeholder: "Assignment Deadline", id1: "date", id2: "time"},
 
         {type: "hr", colSpan: "codingForm col-span-4"},

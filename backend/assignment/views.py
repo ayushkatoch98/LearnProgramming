@@ -1,4 +1,4 @@
-from useAuth.models import Profile, Course, CourseDetail, Assignment, AssignmentSubmission, AssignmentCode, AssignmentRemark
+from useAuth.models import Profile, Course, CourseDetail, Assignment, AssignmentSubmission, AssignmentCode, AssignmentRemark, AssignmentGroup
 from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework import status, viewsets
@@ -20,14 +20,17 @@ from datetime import datetime
 
 def getAssginments(request, cid, aid=None):
     assignments = []
-        
+
     if aid == None:
         assignments = Assignment.objects.filter(course__id = cid, is_deleted=False) 
     else:
         assignments = Assignment.objects.filter(course__id = cid, id = aid, is_deleted=False)
 
 
-    return Response(generateData("", False, AssignmentSerializer(assignments, many=True).data), status=status.HTTP_200_OK)
+    data = AssignmentSerializer(assignments, many=True).data
+
+
+    return Response(generateData("", False, data), status=status.HTTP_200_OK)
 
 
 class AssignmentViewStudent(APIView):
@@ -40,15 +43,21 @@ class AssignmentViewStudent(APIView):
  
 
 
-
 class AssignmentViewTeacher(APIView):
 
     permission_classes = [permissions.IsAuthenticated, isTeacher, isCourseOwner]
 
 
+    def _generateGroups(self, request, cid, assignment):
+        members = CourseDetail.objects.filter(course__id = cid)
+
+        for i in range(1, len(members)):
+            AssignmentGroup.objects.create(assignment = assignment , student_one = members[i-1].student, student_two = members[i].student )
+
+
+
     def get(self, request, cid, aid=None):
         return getAssginments(request, cid, aid)
-
 
 
     def post(self, request, cid):
@@ -61,7 +70,10 @@ class AssignmentViewTeacher(APIView):
         hasCode = False
         if request.data["has_code"] == 'true':
             hasCode = True
-
+        
+        is_group = False
+        if request.data["is_group"] == 'true':
+            is_group = True
         # DATE TIME 2023-06-27 23:12
 
         d = list(map(int, request.data["date"].split("-"))) 
@@ -73,11 +85,13 @@ class AssignmentViewTeacher(APIView):
 
 
         # assignment, created = Assignment.objects.get_or_create(title=request.data["title"], group=assignmentGroup, defaults={"course": course, "file":image, "type": request.data["assignment_type"]})
-        assignment, created = Assignment.objects.get_or_create(title=request.data["title"], course__id = cid, defaults={"course": course, "file":image, "type": request.data["assignment_type"], "has_code": hasCode, "deadline" : deadline})
+        assignment, created = Assignment.objects.get_or_create(title=request.data["title"], course__id = cid, defaults={"course": course, "file":image, "is_group" : is_group, "type": request.data["assignment_type"], "has_code": hasCode, "deadline" : deadline})
+
+        
         if not created:
             return Response(generateData("Assignment already exists", True), status=status.HTTP_409_CONFLICT)
             
-
+        
     
         try:
             assignmentCode = AssignmentCode.objects.create(
@@ -96,11 +110,15 @@ class AssignmentViewTeacher(APIView):
 
             assignment.code = assignmentCode
             assignment.save()
+            
+            self._generateGroups(request, cid, assignment)
+
         except Exception as e: 
             assignment.delete()
             print("ERROR IS", e)
             return Response(generateData("Something went wrong", True), status=status.HTTP_400_BAD_REQUEST)
         
+
         return Response(generateData("Assignment Created", False, AssignmentSerializer(assignment).data), status=status.HTTP_200_OK)
     
 
@@ -111,6 +129,11 @@ class AssignmentViewTeacher(APIView):
         is_published = False
         if request.data["is_published"] == "true":
             is_published = True
+
+
+        is_group = False
+        if request.data["is_group"] == 'true':
+            is_group = True
 
         assignment = Assignment.objects.filter(id=aid).first()
         if assignment == None:
@@ -139,6 +162,7 @@ class AssignmentViewTeacher(APIView):
         assignment.is_published = is_published
         assignment.type = request.data["assignment_type"]
         assignment.has_code = hasCode
+        assignment.is_group = is_group
         assignment.save()
 
 

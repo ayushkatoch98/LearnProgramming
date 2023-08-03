@@ -128,6 +128,7 @@ class Assignment(models.Model):
     is_deleted = models.BooleanField(default=False)
     deadline = models.DateTimeField(null=True, default=None)  
     has_code = models.BooleanField(default=False)
+    is_group = models.BooleanField(default=False)
     code = models.ForeignKey(AssignmentCode, on_delete=models.CASCADE, null=True, default=None)
     file = models.FileField(upload_to="assignment/")
     type = models.CharField(max_length=20, choices=AssignmentType.choices, null=False)
@@ -142,6 +143,15 @@ class Assignment(models.Model):
     def __str__(self):
         return self.title
 
+class AssignmentGroup(models.Model):
+    assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE)
+    student_one = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="member_one")
+    student_two = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="member_two")
+    code = models.CharField(max_length=5000,default="No Remark Provided")
+
+
+    class Meta:
+        unique_together = [['assignment', 'student_one', 'student_two']]
 
 class AssignmentSubmission(models.Model):
 
