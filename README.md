@@ -1,5 +1,5 @@
-# LearnProgramming
-My dissertation project for advanced computer science uol. Work in progress
+# E-Learning Platform
+My dissertation project for advanced computer science uol. Work in progress. 
 
 
 Proposed Features 
@@ -30,3 +30,5 @@ a.	Checks for plagiarism in the submitted reports and the code using ML
 7)	Code Executor 
 a.	Runs user code in the backend, maintains the virtual environment and the installed libraries. 
 
+8) Live Code Share
+a. Teams members will be able to code together from their own pc.
