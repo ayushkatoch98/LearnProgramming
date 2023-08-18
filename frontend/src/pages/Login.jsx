@@ -71,6 +71,7 @@ export default function Login(props) {
         {type: "email", name: "username", colSpan: "col-span-1", label: "Email", required: true, placeholder: "john@gmail.com", id: "email"},
         {type: "password", name: "password", colSpan: "col-span-1", label: "Password", placeholder: "Password", id: "password"},
         {type: "submit", colSpan: "col-span-1", label: ""},
+        
     ]
     return (
         <>
@@ -85,7 +86,11 @@ export default function Login(props) {
                     <div className="w-full py-6 px-3 sm:px-6 lg:px-8">
                         <div className='flex items-center flex-col'>
                             
-                            <FormGenerator inputs={inputs} handleSubmit={handleSubmit} width="w-full sm:w-2/6" cols=" grid-cols-1"></FormGenerator>
+                            <FormGenerator inputs={inputs} handleSubmit={handleSubmit} width="w-full sm:w-2/6" cols=" grid-cols-1">
+
+                                <a href='/auth/register/'> Register for an account </a>
+
+                            </FormGenerator>
                         </div>
                     </div>
                 </main>

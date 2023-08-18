@@ -43,35 +43,44 @@ export default function AssignmentSubmit(props) {
         error: false,
         output: ""
     })
+    
     const [submissionStatus, setSubmissionStatus] = useState("");
     const [isLoading, setIsLoading] = useState(true)
     const {cid, aid} = useParams()
 
-    function whatever(){
+    // TODO: This function is being used for live sharing of code, which is obviously a bad way to do it
+    // I should have used WebSockets but that would have resulted in unnecessary complexity for the uni project 
+    // as a result I decided to go with Long Polling option. 
+    // Also, strings are being replaced by each otehr instead of comparing them 
+    // as a result some changes might get lost, again to avoid unnecessary complexity, its not being 
+    // implemented properly
+    function sync(){
           
         axios.get(buildURL(COURSE_URL.student.submission.get.replace("@cid", cid).replace("@aid", aid), user), buildHeader(user)).then(res => {
-            console.log("Loading");
+
             const data = res.data.data;
             const reportStatus = data.submission.report_submitted
             const codeStatus = data.submission.code_submitted
             const finalStatus = reportStatus + "\n" + codeStatus
             
+            if (assignmentData.submission.code == data.submission.code) {
+                console.log("Update blocked");
+                return;
+            }
 
             setAssignmentData( prev => {
                 return {
                     ...prev,
-                    ...data
+                    ...data,
+                    submission : {
+                        ...data["submission"],
+                        code: data["submission"]["code"]
+                    }
                 }
             })
 
-            setSubmissionStatus(prev => {
-                return {
-                    ...prev,
-                    code : codeStatus,
-                    report: reportStatus
-                }
-            })
-            setIsLoading(false);
+       
+            // setIsLoading(false);
             
         }).catch(err => {
             console.log("err", err)
@@ -88,10 +97,13 @@ export default function AssignmentSubmit(props) {
             const finalStatus = reportStatus + "\n" + codeStatus
             console.log("Assignment Data", data)
 
+
             setAssignmentData( prev => {
                 return {
                     ...prev,
-                    ...data
+                    ...data,
+              
+                    
                 }
             })
 
@@ -133,8 +145,7 @@ export default function AssignmentSubmit(props) {
     }
 
     const a = window.setTimeout( function(e){
-        console.log("submitting");
-        whatever();
+        sync();
     }, 5000 );
 
 

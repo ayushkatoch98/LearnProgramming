@@ -78,7 +78,7 @@ export default function Registration(props) {
                         <div className='flex items-center flex-col'>
                             
                             <FormGenerator inputs={inputs} handleSubmit={handleSubmit} width="w-2/6" cols=" grid-cols-1">
-
+                            <a href='/auth/login/'> Login to an existing account </a>
                             </FormGenerator>
                         </div>
                     </div>

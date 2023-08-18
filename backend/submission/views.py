@@ -21,6 +21,15 @@ import time
 import sys
 
 
+"""
+    TODO: This function is being used for live sharing of code, which is obviously a bad way to do it
+    I should have used WebSockets but that would have resulted in unnecessary complexity for the uni project 
+    as a result I decided to go with Long Polling option. 
+    Also, strings are being replaced by each otehr instead of comparing them 
+    as a result some changes might get lost, again to avoid unnecessary complexity, its not being 
+    implemented properly
+"""
+
 
 # Create your views here.
 
@@ -121,7 +130,8 @@ class SubmissionViewStudent(APIView):
         profile = Profile.objects.get(user__id = request.user.id)
         course = Course.objects.get(id = cid)
         profile2 = None
-    
+        submission2 = None
+
         assignment = Assignment.objects.filter(id = aid, is_deleted=False).first()
         if assignment == None:
             return Response(generateData("Couldnt find the assignment", True), status=status.HTTP_404_NOT_FOUND)
@@ -154,6 +164,12 @@ class SubmissionViewStudent(APIView):
                 "report_submitted" : True,
                 "deadline_met": deadlineMet
             })
+
+            submission2, created = AssignmentSubmission.objects.update_or_create(assignment=assignment, student = profile2, defaults={
+                "file" : file,
+                "report_submitted" : True,
+                "deadline_met": deadlineMet
+            })
         elif request.data["request_type"] == "code":
             
             submission, created = AssignmentSubmission.objects.update_or_create(assignment=assignment, student = profile, defaults={
@@ -162,6 +178,7 @@ class SubmissionViewStudent(APIView):
                 "deadline_met": deadlineMet
             })
 
+            
             if assignment.is_group:
                 submission2, created = AssignmentSubmission.objects.update_or_create(assignment=assignment, student = profile2, defaults={
                     "code" : request.data["code"],
@@ -204,44 +221,79 @@ class SubmissionViewStudent(APIView):
                 scores["final_cases_score"] = 0
 
 
-        try:
-            remark = AssignmentRemark.objects.create(submission = submission, remark_by=course.owner, report_score = 0, 
-                                                    compilation_score = scores["compile"],
-                                                    running_score = scores["running"],
-                                                    test_cases_score = scores["test_cases_score"],
-                                                    final_cases_score = scores["final_cases_score"],
-                                                    is_final_remark = False)
-            
-            if assignment.is_group:
-                remark = AssignmentRemark.objects.create(submission = submission2, remark_by=course.owner, report_score = 0, 
-                                                    compilation_score = scores["compile"],
-                                                    running_score = scores["running"],
-                                                    test_cases_score = scores["test_cases_score"],
-                                                    final_cases_score = scores["final_cases_score"],
-                                                    is_final_remark = False)
-        except:
-            remark = AssignmentRemark.objects.filter(submission = submission, submission__assignment__id = aid).first()
-            if request.data["request_type"] == "report":
-                remark.report_score = 0
-            else:
-                remark.compilation_score = scores["compile"]
-                remark.running_score = scores["running"]
-                remark.test_cases_score = scores["test_cases_score"]
-                remark.final_cases_score = scores["final_cases_score"]
+        def updateOrCreateRemark(submission, aid, course, scores):
+            if submission == None:
+                print("Submissoin is", submission)
+                return
+            remark, created = AssignmentRemark.objects.update_or_create(submission = submission, submission__assignment__id=aid, defaults={
+                "is_final_remark" : True,
+                "remark_by": course.owner,
+                "submission": submission,
+            })
 
-            remark.save()
-
-            if assignment.is_group:
-                remark = AssignmentRemark.objects.filter(submission = submission2, submission__assignment__id = aid).first()
+            if not created:
                 if request.data["request_type"] == "report":
                     remark.report_score = 0
                 else:
                     remark.compilation_score = scores["compile"]
                     remark.running_score = scores["running"]
                     remark.test_cases_score = scores["test_cases_score"]
+                    
                     remark.final_cases_score = scores["final_cases_score"]
 
                 remark.save()
+
+            if created:
+                remark.compilation_score = scores["compile"]
+                remark.running_score = scores["running"]
+                remark.test_cases_score = scores["test_cases_score"]    
+                remark.final_cases_score = scores["final_cases_score"]
+                remark.report_score = 0
+
+        updateOrCreateRemark(submission, aid, course, scores)
+        if assignment.is_group:
+            updateOrCreateRemark(submission2, aid, course, scores)
+
+        # try:
+
+        #     remakr = AssignmentRemark.objects.update_or_create(submission = submission)
+        #     remark = AssignmentRemark.objects.create(submission = submission, remark_by=course.owner, report_score = 0, 
+        #                                             compilation_score = scores["compile"],
+        #                                             running_score = scores["running"],
+        #                                             test_cases_score = scores["test_cases_score"],
+        #                                             final_cases_score = scores["final_cases_score"],
+        #                                             is_final_remark = False)
+            
+        #     if assignment.is_group:
+        #         remark = AssignmentRemark.objects.create(submission = submission2, remark_by=course.owner, report_score = 0, 
+        #                                             compilation_score = scores["compile"],
+        #                                             running_score = scores["running"],
+        #                                             test_cases_score = scores["test_cases_score"],
+        #                                             final_cases_score = scores["final_cases_score"],
+        #                                             is_final_remark = False)
+        # except:
+        #     remark = AssignmentRemark.objects.filter(submission = submission, submission__assignment__id = aid).first()
+        #     if request.data["request_type"] == "report":
+        #         remark.report_score = 0
+        #     else:
+        #         remark.compilation_score = scores["compile"]
+        #         remark.running_score = scores["running"]
+        #         remark.test_cases_score = scores["test_cases_score"]
+        #         remark.final_cases_score = scores["final_cases_score"]
+
+        #     remark.save()
+
+        #     if assignment.is_group:
+        #         remark = AssignmentRemark.objects.filter(submission = submission2, submission__assignment__id = aid).first()
+        #         if request.data["request_type"] == "report":
+        #             remark.report_score = 0
+        #         else:
+        #             remark.compilation_score = scores["compile"]
+        #             remark.running_score = scores["running"]
+        #             remark.test_cases_score = scores["test_cases_score"]
+        #             remark.final_cases_score = scores["final_cases_score"]
+
+        #         remark.save()
             
         data = {
             "ENTIRE_CODE" : ENTIRE_CODE,
