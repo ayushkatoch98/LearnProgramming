@@ -103,7 +103,7 @@ export default function CourseCreate(props) {
         // {type: "text", disabled: true, value: tokenValue, name: "nothing", colSpan: "col-span-2", label: "Invite Token", required: true, placeholder: "Course name", id: "id" },
         {type: "text", defaultValue: titleValue, name: "title", colSpan: "col-span-2 sm:col-span-2", label: "Course Name", required: true, placeholder: "Course name", id: "id" },
         {type: "file", name: "file", colSpan: "col-span-2 sm:col-span-1", label: "Upload Cover Picture", required: true, placeholder: "placeholder", id: "id", accept:".jpg,.jpeg,.png" },
-        {type: "text", name: "accepted_domain", colSpan: "col-span-2 sm:col-span-1", label: "Upload Cover Picture", required: true, placeholder: "@gmail.com", id: "id", accept:".jpg,.jpeg,.png" },
+        {type: "text", name: "accepted_domain", colSpan: "col-span-2 sm:col-span-1", label: "Accepted Domain", required: true, placeholder: "@gmail.com", id: "id", accept:".jpg,.jpeg,.png" },
         {type: "editor", name: "description", colSpan: "col-span-2 sm:col-span-2", label: "Course Description", placeholder: "Course description", id: "id", resize: true, "ref" : courseDescription},
         {type: "submit", colSpan: "col-span-2 sm:col-span-1", label: ""}
     ]

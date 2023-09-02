@@ -88,12 +88,15 @@ class GradeView(APIView):
     def get(self, request, cid, aid, sid):
         # sid = submission id 
         remark = AssignmentRemark.objects.filter(submission__id = sid, submission__assignment__id = aid).first()
-
+        assignment = Assignment.objects.get(id = aid)
         d = generateData("" , False, AssignmentRemarkSerializer(remark).data)
 
         plag = 0
         if remark.submission.report_submitted:
-            plag = int(max(detectPlag(remark.submission, aid)) * 100)
+            try:
+                plag = int(max(detectPlag(remark.submission, aid)) * 100)
+            except:
+                plag = 0
         
 
         remark.submission.plag = plag
@@ -102,7 +105,8 @@ class GradeView(APIView):
 
         data = {
             "data" : d,
-            "similarity": plag
+            "similarity": plag,
+            "has_code" : assignment.has_code
         }
         return Response(data, status=status.HTTP_200_OK)
     

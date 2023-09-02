@@ -165,11 +165,12 @@ class SubmissionViewStudent(APIView):
                 "deadline_met": deadlineMet
             })
 
-            submission2, created = AssignmentSubmission.objects.update_or_create(assignment=assignment, student = profile2, defaults={
-                "file" : file,
-                "report_submitted" : True,
-                "deadline_met": deadlineMet
-            })
+            if assignment.is_group:
+                submission2, created = AssignmentSubmission.objects.update_or_create(assignment=assignment, student = profile2, defaults={
+                    "file" : file,
+                    "report_submitted" : True,
+                    "deadline_met": deadlineMet
+                })
         elif request.data["request_type"] == "code":
             
             submission, created = AssignmentSubmission.objects.update_or_create(assignment=assignment, student = profile, defaults={

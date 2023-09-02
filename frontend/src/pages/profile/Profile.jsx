@@ -41,14 +41,15 @@ export default function Profile(props) {
 
         var data = new FormData(e.target);
         let formObject = Object.fromEntries(data.entries());
-        formObject.description = courseDescription.current.value
+
         console.log("sending", formObject)
         
-        const url = buildURL(COURSE_URL.teacher.course.post, user);
+        const url = buildURL(COURSE_URL.student.profile.post.replace("@uid", user.id) , user);
  
         axios.post(url, formObject, buildHeader(user)).then(res => {
             console.log("response", res)
             showAlert(setAlert, "Success", res, "success")
+        
         }).catch(err => {
             console.log("error", err)
             showAlert(setAlert, "Error", err, "failure")

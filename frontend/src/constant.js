@@ -44,7 +44,10 @@ const COURSE_URL = {
         }
     },
     student:{
-   
+        
+        profile: {
+            post: API_URL + "auth/profile/@uid/"
+        },
         // view modules 
         module: {
             get: API_URL + "module/student/@cid/",

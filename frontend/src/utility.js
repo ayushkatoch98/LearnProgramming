@@ -20,7 +20,7 @@ function showAlert(setAlert, title, description, color){
     var newDescription = description;
     if ((typeof description) != "string"){
      
-
+        // TODO: BAD CODING EXAMPLE DONT CODE LIKE THIS 
         if(description?.data != undefined){
 
             newDescription = description.data?.message;
@@ -71,7 +71,7 @@ function showAlert(setAlert, title, description, color){
             color: color 
         }
     ))
-    // hideAlert(setAlert)
+    hideAlert(setAlert);
 }
 
 function str_replace(find, replace, str){
