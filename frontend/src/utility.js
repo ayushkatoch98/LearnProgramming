@@ -34,7 +34,7 @@ function showAlert(setAlert, title, description, color){
             }
             
             if (newDescription == undefined){
-                newDescription = "response message is fucked dude x2";
+                newDescription = "something went wrong";
             }    
         
         }
@@ -52,7 +52,7 @@ function showAlert(setAlert, title, description, color){
                 newDescription = description.response?.data?.detail
             }
             if (newDescription == undefined){
-                newDescription = "response message is fucked dude";
+                newDescription = "something went wrong";
             }
         }
 

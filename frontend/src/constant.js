@@ -31,10 +31,12 @@ const COURSE_URL = {
         },
         submission: {
             get: API_URL + "submission/teacher/@cid/@aid/@sid/",
-            url: API_URL + "submission/teacher/@cid/@aid/"
+            url: API_URL + "submission/teacher/@cid/@aid/",
+            graph: API_URL + "submission/teacher/graph/@cid/"
         },
         grade: {
-            url : API_URL + "grade/teacher/@cid/@aid/@sid/"
+            url : API_URL + "grade/teacher/@cid/@aid/@sid/",
+            
         },
         // get joined student details courses
         courseDetail: {

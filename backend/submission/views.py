@@ -100,6 +100,36 @@ def getGroup(request, assignment, profile):
 
 
 
+class GraphViewTeacher(APIView):
+    permission_classes = [permissions.IsAuthenticated, isTeacher, isInCourse]
+
+    def get(self, requiest, cid):
+        remarks = AssignmentRemark.objects.filter(submission__assignment__course__id = cid)
+
+        data = []
+
+        sevenPlus = 0
+        fivePlus = 0
+        whatever = 0
+
+        for remark in remarks:
+            if remark.report_score >= 70:
+                sevenPlus += 1
+            elif remark.report_score >= 50:
+                fivePlus += 1
+            else:
+                whatever += 1
+
+        data.append( { "y" : sevenPlus, "label" : "70+"} )
+        data.append( { "y" : fivePlus, "label" : "50 - 70"} )
+        data.append( { "y" : whatever, "label" : "0 - 50"} )
+
+        return Response(generateData("success", False, data),status=status.HTTP_200_OK)
+
+
+
+
+
 class SubmissionViewStudent(APIView):
     permission_classes = [permissions.IsAuthenticated, isStudent|isTeacher, isInCourse]
 

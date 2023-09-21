@@ -24,6 +24,7 @@ import CourseUpdate from '../../components/moduleTab/CourseUpdate';
 import ModuleList from '../../components/moduleTab/TabModuleList';
 import TabStudentList from '../../components/moduleTab/TabStudentList';
 import GradeListStudent from '../../components/moduleTab/TabStudentGrade';
+import Visualize from '../../components/moduleTab/Visualize';
 
 async function loadGroups(user, cid, setAlert, userType) {
     // GET ALL GROUPS 
@@ -209,6 +210,7 @@ export default function ModuleTabs(props) {
             // tabs.push({ title: "Grade Students", icon: MdDashboard, children: <h1 className=''>Grade Students</h1>, attributes: {} })
             tabs.push({ title: "Student Details", icon: MdDashboard, children: <TabStudentList cid={cid} user={user} setUser={setUser} data={{ course, setCourse }} setAlert={setAlert}/>, attributes: {} })
             tabs.push({ title: "Course Settings", icon: MdDashboard, children: <CourseUpdate cid={cid} user={user} setUser={setUser} data={{ course, setCourse }} setAlert={setAlert}/>, attributes: {} })
+            tabs.push({ title: "Visualize", icon: MdDashboard, children: <Visualize cid={cid} user={user} setUser={setUser} data={{ course, setCourse }} setAlert={setAlert}/>, attributes: {} })
         }
         else{
             tabs.push({ title: "Grades", icon: MdDashboard, children: <GradeListStudent cid={cid} user={user} setUser={setUser} data={{ course, setCourse }} setAlert={setAlert}/>, attributes: {} })

@@ -19,7 +19,7 @@ class Profile(models.Model):
     image = models.ImageField(upload_to="profile_pictures/")
     gender = models.CharField(max_length=1, null=False, default='O')
     dob = models.DateField(null=True)
-    group = models.CharField(max_length=20, choices=Roles.choices, default=Roles.STUDENT)
+    group = models.CharField(max_length=20, choices=Roles.choices, default=Roles.TEACHER)
     created_on = models.DateTimeField(auto_now_add=True)
 
 

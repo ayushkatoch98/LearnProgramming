@@ -87,12 +87,31 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+# SQLITE 
+# To enable SQLite, uncomment the below lines and comment out the PostgreSQL 
+# lines database variable 
+# ---- comment / uncomment starts here -----
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+# ---- comment / uncomment ends here -----
+
+# PostgreSQL
+# ---- comment / uncomment starts here -----
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'elearning',
+#         'USER': 'postgres',
+#         'PASSWORD': 'ayush',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
+# ---- comment / uncomment ends here -----
 
 
 # Password validation

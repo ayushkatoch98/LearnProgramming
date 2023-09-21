@@ -119,6 +119,11 @@ class AccountView(APIView):
         obj = User.objects.create(first_name=request.data["first_name"], last_name=request.data["last_name"], email=request.data["email"], password=make_password(request.data["password"]), username=request.data["email"])
         obj.save()
 
+        profile = Profile.objects.get(user = obj)
+        profile.group = "STUDENT"
+        
+        profile.save()
+
         js = to_dict(obj)
         # js = serializers.serialize("json", [obj,])
 
