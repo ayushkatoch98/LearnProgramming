@@ -37,16 +37,16 @@ a. Teams members will be able to code together from their own pc.
 
 ![Image1](https://github.com/ayushkatoch98/LearnProgramming/blob/main/Screenshots/Picture%201.png)
 
-![Image2]((https://github.com/ayushkatoch98/LearnProgramming/blob/main/Screenshots/Picture%202.png))
+![Image2](https://github.com/ayushkatoch98/LearnProgramming/blob/main/Screenshots/Picture%202.png)
 
-![Image3]((https://github.com/ayushkatoch98/LearnProgramming/blob/main/Screenshots/Picture%204.png))
+![Image3](https://github.com/ayushkatoch98/LearnProgramming/blob/main/Screenshots/Picture%204.png)
 
-![Image4]((https://github.com/ayushkatoch98/LearnProgramming/blob/main/Screenshots/Picture%205.png))
+![Image4](https://github.com/ayushkatoch98/LearnProgramming/blob/main/Screenshots/Picture%205.png)
 
-![Image5]((https://github.com/ayushkatoch98/LearnProgramming/blob/main/Screenshots/Picture%206.png)https://github.com/ayushkatoch98/LearnProgramming/blob/main/Screenshots/Picture%206.png)
+![Image5](https://github.com/ayushkatoch98/LearnProgramming/blob/main/Screenshots/Picture%206.png)
 
-![Image6]((https://github.com/ayushkatoch98/LearnProgramming/blob/main/Screenshots/Picture%207.png)https://github.com/ayushkatoch98/LearnProgramming/blob/main/Screenshots/Picture%207.png)
+![Image6](https://github.com/ayushkatoch98/LearnProgramming/blob/main/Screenshots/Picture%207.png)
 
-![Image7]((https://github.com/ayushkatoch98/LearnProgramming/blob/main/Screenshots/Picture%208.png)https://github.com/ayushkatoch98/LearnProgramming/blob/main/Screenshots/Picture%208.png)
+![Image7](https://github.com/ayushkatoch98/LearnProgramming/blob/main/Screenshots/Picture%208.png)
 
 
